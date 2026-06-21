@@ -67,11 +67,12 @@ export function AthleteDashboardClient() {
   const [userPlan, setUserPlan] = useState<"basic" | "plus" | "premium" | null>(null);
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const plan = sessionStorage.getItem("userPlan") as "basic" | "plus" | "premium" | null;
-      // Default to basic if no plan is found
-      setUserPlan(plan || "basic"); 
-    }
+    // Busca plano real do Firestore via server action
+    import('@/lib/user-actions').then(({ getCurrentUserProfile }) => {
+      getCurrentUserProfile().then((profile) => {
+        setUserPlan(profile?.plan ?? 'basic');
+      });
+    });
   }, []);
 
   const form = useForm<ProfileFormValues>({
