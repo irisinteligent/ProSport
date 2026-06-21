@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ProSport — Landing</title>
+  <style>
+    :root { --bg:#0f172a; --fg:#e2e8f0; --card:#111827; --line:#1f2937; --primary:#0ea5e9; }
+    * { box-sizing: border-box }
+    body { margin:0; font-family: system-ui, Arial, sans-serif; background:var(--bg); color:var(--fg) }
+    .wrap { max-width: 1100px; margin: 0 auto; padding: 24px }
+    .hero { display:grid; grid-template-columns:1fr 1fr; gap:24px; margin-top: 8px }
+    .card { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:24px; box-shadow: 0 10px 30px rgba(0,0,0,.25) }
+    .img img { width:100%; display:block; border-radius:12px }
+    h1 { margin:4px 0 10px; font-size:40px }
+    .badge { display:inline-block; padding:4px 10px; border-radius:999px; background:var(--primary); color:#03131f; font-weight:700 }
+    .cta a { background:var(--primary); color:#03131f; padding:12px 18px; border-radius:12px; text-decoration:none; font-weight:700 }
+    .grid { display:grid; gap:16px; grid-template-columns: repeat(3, 1fr); margin-top:24px }
+    .muted { color:#94a3b8 }
+    @media (max-width: 900px){ .hero{ grid-template-columns:1fr } .grid{ grid-template-columns:1fr } }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div id="loading" class="muted">Carregando…</div>
+
+    <section id="hero" class="hero" style="display:none">
+      <div class="card img"><img id="foto" alt=""></div>
+      <div class="card">
+        <div class="badge" id="plano">BASIC</div>
+        <h1 id="nome">Nome do Atleta</h1>
+        <p id="mod" class="muted">modalidade</p>
+        <div class="cta" style="margin-top:16px" id="cta"></div>
+        <p id="bio" style="margin-top:16px"></p>
+      </div>
+    </section>
+
+    <section id="blocos" class="grid" style="display:none">
+      <div class="card"><b>Treinos</b><p class="muted">Rotina, foco, objetivos...</p></div>
+      <div class="card"><b>Conquistas</b><p class="muted">Títulos, pódios, rankings...</p></div>
+      <div class="card"><b>Parceiros</b><p class="muted">Marcas e colaborações.</p></div>
+    </section>
+
+    <pre id="debug" class="card" style="margin-top:24px; display:none"></pre>
+  </div>
+
+  <script>
+    // Tenta SA-EAST1 e cai para US-CENTRAL1
+    const ENDPOINTS = [
+      "https://southamerica-east1-prosport-portfolio.cloudfunctions.net/getLanding",
+      "https://us-central1-prosport-portfolio.cloudfunctions.net/getLanding",
+    ];
+
+    const $ = (id) => document.getElementById(id);
+    const path = location.pathname.replace(/\/+$/, "");
+    const slug = decodeURIComponent(path.split("/").pop() || "");
+
+    async function fetchLanding(slug) {
+      for (const base of ENDPOINTS) {
+        const url = `${base}?slug=${encodeURIComponent(slug)}&format=json`;
+        try {
+          const resp = await fetch(url);
+          const data = await resp.json();
+          if (resp.ok && data?.ok) return data;
+        } catch (e) { /* tenta o próximo */ }
+      }
+      throw new Error("Landing não encontrada nos endpoints.");
+    }
+
+    function applyTheme(theme) {
+      if (!theme) return;
+      if (theme.primary) document.documentElement.style.setProperty('--primary', theme.primary);
+      if (theme.dark) document.documentElement.style.setProperty('--bg', theme.dark);
+    }
+
+    (async () => {
+      try {
+        const data = await fetchLanding(slug);
+        const l = data.landing || {};
+
+        applyTheme(l.theme);
+
+        $("foto").src = l.imagem || "";
+        $("foto").alt = l.nome || slug;
+        $("plano").textContent = (l.plano || "basic").toString().toUpperCase();
+        $("nome").textContent = l.nome || slug;
+        $("mod").textContent = l.modalidade || "";
+        $("bio").textContent = l.bio || "";
+
+        $("cta").innerHTML = l.contatoEmail
+          ? `<a href="mailto:${l.contatoEmail}">Contato</a>`
+          : "";
+
+        $("loading").style.display = "none";
+        $("hero").style.display = "";
+        $("blocos").style.display = "";
+
+        // debug opcional:
+        // $("debug").style.display = "";
+        // $("debug").textContent = JSON.stringify(data, null, 2);
+      } catch (e) {
+        $("loading").textContent = "Landing não encontrada.";
+      }
+    })();
+  </script>
+</body>
+</html>

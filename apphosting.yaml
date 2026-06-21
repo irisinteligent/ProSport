@@ -1,0 +1,12 @@
+# Settings for Firebase App Hosting (Cloud Run).
+# See https://firebase.google.com/docs/app-hosting/configure
+
+runConfig:
+  minInstances: 0
+
+env:
+  # Chave da API do Gemini (Google AI) para geração de sport pages com IA
+  - variable: GEMINI_API_KEY
+    secret: GEMINI_API_KEY
+    availability:
+      - RUNTIME

@@ -1,0 +1,48 @@
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "prosport-portfolio",
+          "appId": "1:785009102684:android:0e14f8156921378690bb99",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "prosport-portfolio",
+          "configurations": {
+            "android": "1:785009102684:android:0e14f8156921378690bb99",
+            "ios": "1:785009102684:ios:68da2adb4894f49490bb99",
+            "macos": "1:785009102684:ios:68da2adb4894f49490bb99",
+            "web": "1:785009102684:web:e3674ae9b10b1a2690bb99",
+            "windows": "1:785009102684:web:30d7037e5e12abcf90bb99"
+          }
+        }
+      }
+    }
+  },
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
+  "hosting": {
+    "public": "public",
+    "ignore": ["firebase.json","**/.*","**/node_modules/**"],
+    "rewrites": [
+      { "source": "/landing/**", "destination": "/landing.html" },
+      { "source": "**", "destination": "/index.html" }
+    ],
+    "headers": [
+      { "source": "**", "headers": [ { "key": "Cache-Control", "value": "no-store" } ] }
+    ]
+  },
+  "functions": [
+    {
+      "source": "functions",
+      "codebase": "default",
+      "ignore": ["node_modules",".git","firebase-debug.log","firebase-debug.*.log","*.local"],
+      "predeploy": ["npm --prefix \"$RESOURCE_DIR\" run build"]
+    }
+  ]
+}
