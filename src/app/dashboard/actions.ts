@@ -1,11 +1,8 @@
-
 "use server";
 
-import {
-  generateSponsorPresentation,
-} from "@/ai/flows/generate-sponsor-presentation";
+import { generateSponsorPresentation } from "@/ai/flows/generate-sponsor-presentation";
 import type { GenerateSponsorPresentationInput } from "@/ai/flows/types";
-import { setPageContent } from "@/lib/storage";
+import { setPageContent, uploadAthletePhoto } from "@/lib/storage";
 import { testAiConnection } from "@/ai/flows/test-ai-connection";
 import { generateEnhancedSportpage } from '@/ai/flows/generate-enhanced-sportpage';
 import type { GenerateEnhancedSportpageInput } from '@/ai/flows/types';
@@ -24,24 +21,21 @@ export async function createBasicPresentation(
   try {
     const { presentation } = await generateSponsorPresentation(data);
     const slug = generateSlug(data.fullName) + `-basic-${Date.now()}`;
-    // For basic presentation, wrap it in a simple preformatted HTML for better viewing
-    const htmlContent = `
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>${data.fullName} - Presentation</title>
-      <style>
-        body { font-family: sans-serif; line-height: 1.6; padding: 2rem; background-color: #f4f4f9; color: #333; }
-        pre { white-space: pre-wrap; background-color: #fff; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-      </style>
-    </head>
-    <body>
-      <pre>${presentation}</pre>
-    </body>
-    </html>
-    `;
+    const htmlContent = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${data.fullName} - Apresentacao</title>
+  <style>
+    body { font-family: sans-serif; line-height: 1.6; padding: 2rem; background-color: #f4f4f9; color: #333; }
+    pre { white-space: pre-wrap; background-color: #fff; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+  </style>
+</head>
+<body>
+  <pre>${presentation}</pre>
+</body>
+</html>`;
 
     await setPageContent(slug, htmlContent);
     const presentationUrl = `/p/${slug}`;
@@ -61,6 +55,12 @@ export async function createEnhancedSportpage(
 ) {
   try {
     const { photoDataUri, ...athleteData } = data;
+    const slug = generateSlug(data.fullName) + `-plus-${Date.now()}`;
+
+    // 1. Upload photo to Firebase Storage (avoids Firestore 1MB doc limit)
+    const photoUrl = await uploadAthletePhoto(photoDataUri, slug);
+
+    // 2. Generate HTML from AI
     const aiInput: GenerateEnhancedSportpageInput = athleteData;
     const sportpageHtml = await generateEnhancedSportpage(aiInput);
 
@@ -68,19 +68,17 @@ export async function createEnhancedSportpage(
       throw new Error("AI did not return HTML content.");
     }
 
-    const finalHtml = sportpageHtml.replace("__IMAGE_PLACEHOLDER__", photoDataUri);
+    // 3. Replace placeholder with public Storage URL
+    const finalHtml = sportpageHtml.replace('__IMAGE_PLACEHOLDER__', photoUrl);
 
-    const slug = generateSlug(data.fullName) + `-plus-${Date.now()}`;
     await setPageContent(slug, finalHtml);
     const sportpageUrl = `/p/${slug}`;
     return { sportpageHtml: finalHtml, sportpageUrl };
   } catch (error: any) {
     console.error("Error in createEnhancedSportpage:", error);
-    // Return the specific error message instead of a generic one.
     return { error: `Failed to generate enhanced sportpage: ${error.message}` };
   }
 }
-
 
 export async function performAiConnectionTest() {
   try {
