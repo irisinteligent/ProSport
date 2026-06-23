@@ -1,10 +1,11 @@
 import {onRequest} from "firebase-functions/v2/https";
-import * as admin from "firebase-admin";
+import {getApps, initializeApp} from "firebase-admin/app";
+import {getFirestore, FieldValue} from "firebase-admin/firestore";
 
-if (!admin.apps.length) {
-  admin.initializeApp();
+if (!getApps().length) {
+  initializeApp();
 }
-const db = admin.firestore();
+const db = getFirestore();
 
 // ======= Versão/diagnóstico =======
 const BUILD_ID = "prosport-functions@C:\\PROSPORT | 2025-08-28T00:00-03";
@@ -81,7 +82,7 @@ export const generateLanding = onRequest(
       const slug = slugify(String(nome));
       const docRef = db.collection("landings").doc(slug);
       const docSnap = await docRef.get();
-      const now = admin.firestore.FieldValue.serverTimestamp();
+      const now = FieldValue.serverTimestamp();
 
       // Conteúdo base do landing
       const data: Record<string, any> = {
