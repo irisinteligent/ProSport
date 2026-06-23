@@ -11,6 +11,8 @@ import { testAiConnection } from "@/ai/flows/test-ai-connection";
 import { generateEnhancedSportpage } from '@/ai/flows/generate-enhanced-sportpage';
 import type { GenerateEnhancedSportpageInput } from '@/ai/flows/types';
 import { uploadAthletePhoto } from '@/lib/upload-photo';
+import { getSession } from '@/lib/auth';
+import { adminDb } from '@/lib/firebase-admin';
 
 const generateSlug = (name: string) => {
   return name
@@ -62,6 +64,11 @@ export async function createEnhancedSportpage(
   data: CreateEnhancedSportpageData
 ) {
   try {
+    const session = await getSession();
+    if (!session || session.role !== "athlete") {
+      return { error: "Sessão inválida. Faça login novamente." };
+    }
+
     const { photoDataUri, ...athleteData } = data;
     const aiInput: GenerateEnhancedSportpageInput = athleteData;
     const { html: sportpageHtml } = await generateEnhancedSportpage(aiInput);
@@ -76,6 +83,22 @@ export async function createEnhancedSportpage(
 
     await setPageContent(slug, finalHtml);
     const sportpageUrl = `/p/${slug}`;
+
+    await adminDb.collection("users").doc(session.uid).set(
+      {
+        athleteProfile: {
+          sport: data.sport,
+          isAmateur: data.isAmateur,
+          achievements: data.achievements,
+          photoUrl,
+          slug,
+          sportpageUrl,
+          updatedAt: new Date().toISOString(),
+        },
+      },
+      { merge: true }
+    );
+
     return { sportpageHtml: finalHtml, sportpageUrl };
   } catch (error: any) {
     console.error("Error in createEnhancedSportpage:", error);

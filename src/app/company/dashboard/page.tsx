@@ -1,19 +1,17 @@
 
 import { Header } from "@/components/header";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { requireSession } from "@/lib/auth";
 import { redirectToBillingPortal } from "@/lib/billing-actions";
+import { AthleteSearchSection } from "@/components/company/athlete-search-section";
 
-export default async function CompanyDashboardPage() {
+export default async function CompanyDashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string }>;
+}) {
   const session = await requireSession(["company"], "/company/login");
+  const { q } = await searchParams;
 
   return (
     <div className="flex min-h-screen w-full flex-col">
@@ -33,18 +31,7 @@ export default async function CompanyDashboardPage() {
           </form>
         </div>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            <Card className="lg:col-span-3">
-                <CardHeader>
-                    <CardTitle>Buscar Atletas</CardTitle>
-                    <CardDescription>
-                        Filtre para encontrar o talento ideal para sua marca.
-                    </CardDescription>
-                </CardHeader>
-                <CardContent>
-                     <Input type="text" id="search" placeholder="Buscar por modalidade, nome, localização..." />
-                </CardContent>
-            </Card>
-            {/* Athlete cards will be listed here */}
+            <AthleteSearchSection query={q} />
         </div>
       </main>
     </div>
