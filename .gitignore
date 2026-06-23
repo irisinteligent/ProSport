@@ -1,0 +1,78 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/node_modules
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# testing
+/coverage
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+.genkit/*
+.env*
+
+# firebase
+firebase-debug.log
+firestore-debug.log
+
+# Flutter / Dart
+/prosport_mobile/.dart_tool/
+/prosport_mobile/build/
+/prosport_mobile/android/build/
+/prosport_mobile/android/app/build/
+/prosport_mobile/android/local.properties
+/prosport_mobile/android/key.properties
+/prosport_mobile/ios/Flutter/flutter_export_environment.sh
+/prosport_mobile/ios/Pods/
+*.jks
+*.keystore
+
+# Binários e arquivos grandes
+*.rar
+*.zip
+
+# IDE
+.idea/
+
+# Vault Obsidian (este repo também é usado como vault) — estado local de workspace/plugins
+.obsidian/
+
+# Estado local de sessão (plugin Claudian / Obsidian)
+.claudian/
+.modified
+
+# Configuração local do Claude Code (por usuário, não compartilhada)
+.claude/settings.local.json
+
+# Artefatos Gradle perdidos na raiz (deveriam estar só em prosport_mobile/android)
+/.gradle/
+/settings.gradle

@@ -1,0 +1,16 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // Fotos de atleta usadas nas sportpages — leitura pública, escrita só via Admin SDK
+    match /sportpages/{slug}/{fileName} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // Todo o restante nega acesso por padrão
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -1,0 +1,73 @@
+pluginManagement {
+    def p = new Properties()
+    def f = new File(rootDir, "local.properties")
+    if (f.exists()) { f.withInputStream { p.load(it) } }
+    def flutterSdkPath = p.getProperty("flutter.sdk")
+    if (flutterSdkPath == null) { throw new GradleException("flutter.sdk nÃƒÆ’Ã‚Â£o definido em android/local.properties") }
+    includeBuild(new File(flutterSdkPath, "packages/flutter_tools/gradle").getAbsolutePath())
+
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+
+plugins {
+    id "dev.flutter.flutter-plugin-loader" version "1.0.0"
+    id "com.android.application"          version "8.7.2" apply false
+    id "org.jetbrains.kotlin.android"     version "1.9.24" apply false
+}
+
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.PREFER_PROJECT)
+    repositories { google(); mavenCentral() }
+}
+
+rootProject.name = "prosport_mobile"
+include(":app")
+dependencyResolutionManagement {
+    repositories {
+        // Override: AndroidX e relinker vÃªm do Google, nÃ£o do mirror do Flutter.
+        exclusiveContent {
+            forRepository { google() }
+            filter {
+                includeGroupByRegex("androidx\\..*")
+
+            }
+        }
+    }
+}
+
+
+dependencyResolutionManagement {
+    repositories {
+        exclusiveContent {
+            forRepository { mavenCentral() }
+            filter {
+                includeGroup("com.getkeepsafe.relinker")
+            }
+        }
+    }
+}
+
+
+dependencyResolutionManagement {
+    repositories {
+        // TODOS os grupos androidx (inclui "androidx" e "androidx.*") só no google()
+        exclusiveContent {
+            forRepository { google() }
+            filter {
+                includeGroup("androidx")
+                includeGroupByRegex("androidx.*")
+            }
+        }
+        // relinker só no Maven Central
+        exclusiveContent {
+            forRepository { mavenCentral() }
+            filter {
+                includeGroup("com.getkeepsafe.relinker")
+            }
+        }
+    }
+}

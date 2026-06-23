@@ -1,0 +1,89 @@
+
+import Link from "next/link";
+import { Icons } from "@/components/icons";
+import { logoutUser } from "@/lib/auth-actions";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+
+interface HeaderProps {
+  plansPath?: string;
+  dashboardPath?: string;
+  userLabel?: string;
+  userEmail?: string;
+}
+
+export function Header({
+  plansPath = "/plans",
+  dashboardPath = "/dashboard",
+  userLabel = "Usuário",
+  userEmail = "",
+}: HeaderProps) {
+  return (
+    <header className="sticky top-0 z-40 w-full border-b bg-card/80 backdrop-blur-sm">
+      <div className="container flex h-16 items-center space-x-4 sm:justify-between sm:space-x-0">
+        <div className="flex gap-6 md:gap-10">
+          <Link href={dashboardPath} className="flex items-center space-x-2">
+            <Icons.logo className="h-6 w-6 text-primary" />
+            <span className="inline-block font-headline font-bold">
+              ProSport
+            </span>
+          </Link>
+          <nav className="hidden gap-6 md:flex">
+            <Link
+              href={dashboardPath}
+              className="flex items-center text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+            >
+              Painel
+            </Link>
+            <Link
+              href={plansPath}
+              className="flex items-center text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+            >
+              Planos
+            </Link>
+          </nav>
+        </div>
+
+        <div className="flex flex-1 items-center justify-end space-x-4">
+          <nav className="flex items-center space-x-1">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage src="https://placehold.co/40x40.png" alt={userLabel} data-ai-hint="person user" />
+                    <AvatarFallback>{userLabel.charAt(0).toUpperCase()}</AvatarFallback>
+                  </Avatar>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56" align="end" forceMount>
+                <DropdownMenuLabel className="font-normal">
+                  <div className="flex flex-col space-y-1">
+                    <p className="text-sm font-medium leading-none">{userLabel}</p>
+                    <p className="text-xs leading-none text-muted-foreground">
+                      {userEmail}
+                    </p>
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <button type="submit" form="logout-form" className="w-full cursor-pointer text-left">
+                    Sair
+                  </button>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </nav>
+        </div>
+      </div>
+      <form id="logout-form" action={logoutUser} />
+    </header>
+  );
+}

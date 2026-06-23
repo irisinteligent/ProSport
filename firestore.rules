@@ -1,0 +1,22 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Sport pages geradas pela IA — leitura pública, escrita só via Admin SDK
+    match /sportpages/{slug} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // Landing pages geradas pelas Cloud Functions — leitura pública
+    match /landings/{slug} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // Todo o restante nega acesso por padrão
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
