@@ -18,7 +18,7 @@ const prompt = ai.definePrompt({
   name: 'generateSponsorPresentationPrompt',
   input: {schema: GenerateSponsorPresentationInputSchema},
   output: {schema: GenerateSponsorPresentationOutputSchema},
-  model: 'googleai/gemini-1.5-flash-latest',
+  model: 'googleai/gemini-2.5-flash',
   prompt: `
 You are an AI assistant specialized in creating presentations for athletes to attract potential sponsors.
 Your task is to generate a compelling presentation in Markdown format based on the athlete's data.

@@ -46,16 +46,17 @@ const generateEnhancedSportpagePrompt = ai.definePrompt({
     name: 'generateEnhancedSportpagePrompt',
     input: { schema: GenerateEnhancedSportpageInputSchema },
     output: { schema: GenerateEnhancedSportpageOutputSchema },
-    model: 'googleai/gemini-1.5-flash-latest',
+    model: 'googleai/gemini-2.5-flash',
     prompt: `
-You are an expert web designer specializing in Tailwind CSS.
-Your task is to generate the HTML for a professional athlete profile page.
+You are an expert web designer creating a self-contained, professional athlete profile page inspired by major sports leagues (NFL/NBA).
 
 Instructions:
 1.  Generate ONLY the HTML content for the <body> tag.
 2.  Do NOT include <!DOCTYPE html>, <html>, <head>, <body>, or <script> tags.
-3.  The 'src' attribute for the main athlete image MUST be exactly "__IMAGE_PLACEHOLDER__". Do not use any other placeholder.
-4.  If a 'youtubeLink' is provided, you MUST include a section with an embedded YouTube video player. The 'src' for the iframe must be the direct embed URL.
+3.  Do NOT use Tailwind CSS or any other CSS framework class names (e.g. no "bg-gray-900", "flex", "p-4") — this HTML is rendered in an isolated context with no stylesheet loaded, so framework classes have zero visual effect. Style every element with inline "style" attributes (or a single <style> block with plain CSS at the top) using explicit colors, fonts, spacing and layout, the same way you'd write a self-contained HTML email.
+4.  Always set explicit "background-color" and "color" on the root container — never rely on the browser's default colors.
+5.  The 'src' attribute for the main athlete image MUST be exactly "__IMAGE_PLACEHOLDER__". Do not use any other placeholder.
+6.  If a 'youtubeLink' is provided, you MUST include a section with an embedded YouTube video player. The 'src' for the iframe must be the direct embed URL.
 
 Use the following data to create the page:
 - Full Name: {{{fullName}}}

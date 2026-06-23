@@ -25,6 +25,7 @@ export default function RootLayout({
         className={cn(
           "min-h-screen font-body antialiased flex flex-col"
         )}
+        suppressHydrationWarning
       >
         <div className="flex-1">
             {children}

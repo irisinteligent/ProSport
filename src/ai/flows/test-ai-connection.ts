@@ -22,6 +22,7 @@ export async function testAiConnection(): Promise<TestAiConnectionOutput> {
 const prompt = ai.definePrompt({
   name: 'testAiConnectionPrompt',
   output: {schema: TestAiConnectionOutputSchema},
+  model: 'googleai/gemini-2.5-flash',
   prompt: `Please respond with the exact message: "AI Connection Test Successful"`,
 });
 
