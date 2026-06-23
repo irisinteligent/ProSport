@@ -99,8 +99,8 @@ prosport/
 │   │   │                              # ✅ autenticação real (Firebase Auth via Server Actions, ver §4.1) — conteúdo de negócio de empresa/clube ainda é estático
 │   │   ├── dashboard/
 │   │   │   ├── page.tsx                # painel do atleta — protegido por `requireSession(["athlete"])`
-│   │   │   └── actions.ts              # Server Actions: chama os flows de IA e salva o HTML gerado (`setPageContent`)
-│   │   ├── club/dashboard/, company/dashboard/  # protegidos por `requireSession(["company"])` — conteúdo (busca de atletas) ainda é só UI estática, sem dados reais
+│   │   │   └── actions.ts              # Server Actions: chama os flows de IA, salva o HTML gerado (`setPageContent`) e indexa `athleteProfile` em `users/{uid}` (plano Plus/Premium, ver §4.7)
+│   │   ├── club/dashboard/, company/dashboard/  # protegidos por `requireSession(["company"])` — busca de atletas real via `AthleteSearchSection` (ver §4.7)
 │   │   ├── admin/page.tsx              # painel admin — protegido por `requireSession(["admin"])`; métricas vêm de `src/lib/admin-metrics.ts`
 │   │   ├── p/[slug]/page.tsx           # página PÚBLICA da sportpage — renderiza o HTML salvo em `iframe srcDoc` sandboxed
 │   │   └── test-ai/page.tsx            # página de diagnóstico que chama `testAiConnection`
@@ -109,6 +109,7 @@ prosport/
 │   │   ├── checkout/checkout-form.tsx  # UI de checkout — chama `createCheckoutSession` e redireciona (`window.location.href`) pro Stripe; sem formulário de cartão local
 │   │   ├── dashboard/athlete-dashboard-client.tsx  # formulário de geração da sportpage (envia foto como base64 data URI — ver §7); recebe o plano real via prop
 │   │   ├── admin/admin-dashboard-client.tsx
+│   │   ├── company/athlete-search-section.tsx  # Server Component compartilhado por `company/dashboard` e `club/dashboard`: form de busca (GET nativo, sem JS) + cards de resultado (ver §4.7)
 │   │   └── ui/                         # primitivos shadcn/ui (gerados; evite editar a lógica interna, prefira compor por fora)
 │   ├── hooks/                          # use-toast, use-mobile
 │   └── lib/
@@ -123,6 +124,7 @@ prosport/
 │       ├── storage.ts                  # CRUD simples da coleção Firestore `sportpages` (apesar do nome, NÃO usa Firebase Storage)
 │       ├── upload-photo.ts             # `uploadAthletePhoto` — sobe a foto do atleta pro Firebase Storage e devolve a download URL (este sim usa Firebase Storage)
 │       ├── admin-metrics.ts            # `getAdminMetrics` — agregações `.count()` do Firestore para o painel admin
+│       ├── athlete-search.ts           # `searchAthletes(query)` — lê atletas Plus/Premium (`users` com `athleteProfile`) e filtra por nome/esporte (ver §4.7)
 │       └── utils.ts                    # helper `cn()` (clsx + tailwind-merge)
 ├── functions/                       # Firebase Cloud Functions (codebase "default")
 │   ├── src/
@@ -187,10 +189,11 @@ Toda a autenticação roda no servidor, sem Firebase Client SDK (ver §6.4 para 
 
 ### 4.3 Geração de sportpage pelo Next.js (plano Plus/Premium)
 1. Atleta preenche o mesmo formulário + foto (convertida para base64 no browser) + link do YouTube (opcional).
-2. `createEnhancedSportpage` chama `generateEnhancedSportpage`, que pede ao Gemini para gerar o **HTML completo** da página (com placeholder de imagem `__IMAGE_PLACEHOLDER__` e, se houver YouTube, um iframe de embed).
+2. `createEnhancedSportpage` (`src/app/dashboard/actions.ts`) exige `getSession()` válida com `role === "athlete"` — só depois disso chama `generateEnhancedSportpage`, que pede ao Gemini para gerar o **HTML completo** da página (com placeholder de imagem `__IMAGE_PLACEHOLDER__` e, se houver YouTube, um iframe de embed).
 3. O placeholder é substituído pela data URI da foto.
 4. HTML final salvo em `sportpages/{slug}-plus-{timestamp}`.
 5. A página pública (`/p/[slug]`) renderiza esse HTML dentro de um `<iframe srcDoc>` com `sandbox="allow-scripts allow-same-origin"`.
+6. Em seguida, grava (`merge: true`) um campo `athleteProfile` (`sport`, `isAmateur`, `achievements`, `photoUrl`, `slug`, `sportpageUrl`, `updatedAt`) em `users/{session.uid}` — é esse campo que alimenta a busca de atletas (ver §4.7). `createBasicPresentation` (plano Básico) não grava `athleteProfile`: Básico nunca é pesquisável, por design (ver §1).
 
 ### 4.4 Geração pela Cloud Function (`generateLanding`/`getLanding`)
 Fluxo independente do Next.js, hoje usado pelo app Flutter de QA:
@@ -215,6 +218,17 @@ Ambas chamam `stripe.billingPortal.sessions.create({ customer: stripeCustomerId,
 
 ### 4.6 Acesso público à página do atleta
 Qualquer pessoa com o link `/p/{slug}` acessa a sportpage gerada — leitura é pública por design (`firestore.rules`: `allow read: if true` nas coleções `sportpages` e `landings`). Não há controle de quem pode ver (não há paywall na visualização, só na geração).
+
+### 4.7 Busca de atletas (✅ real, só Plus/Premium)
+`company/dashboard` e `club/dashboard` renderizam `<AthleteSearchSection query={q} />` (`src/components/company/athlete-search-section.tsx`), recebendo `q` da query string da própria página (`searchParams.q` — form HTML simples, GET nativo, sem JS no cliente).
+
+1. O componente chama `searchAthletes(query)` (`src/lib/athlete-search.ts`), que consulta `users` com `role == "athlete"` e `plan == "plus"` ou `plan == "premium"` (duas queries de igualdade em paralelo, mesmo padrão de `getAdminMetrics` — sem precisar de índice composto novo, `firestore.indexes.json` continua vazio).
+2. Só entram no resultado docs que já têm `athleteProfile` (ver §4.3) — atleta Plus/Premium que ainda não gerou nenhuma sportpage simplesmente não aparece.
+3. Filtro de texto é em memória: `includes()` case-insensitive contra `fullName` e `athleteProfile.sport` (sem normalização de acento — buscar "natacao" não acha "Natação"; é uma limitação conhecida, não um bug).
+4. **Por que só Plus/Premium**: o plano Básico, por modelo de negócio (§1), não inclui divulgação ativa da ProSport — o atleta Básico distribui o próprio link. O `plan` é lido direto de `users/{uid}`, que o webhook do Stripe mantém atualizado (§4.5); se a assinatura for cancelada, o atleta some da busca automaticamente, sem nenhum código adicional.
+5. Toda a leitura roda via Admin SDK dentro do Server Component (sem Client SDK, ver §4.1) — não há regra nova em `firestore.rules` para isso.
+
+Validado manualmente criando e depois removendo contas de teste reais no Firebase do projeto (Auth + Firestore): atletas Plus/Premium aparecem, atleta Básico com `athleteProfile` preenchido não aparece (confirma que o filtro é por plano, não só presença do campo), busca por nome/esporte filtra corretamente, e o link "Ver Sportpage" resolve em `/p/{slug}`.
 
 ## 5. Variáveis de Ambiente
 
@@ -377,7 +391,7 @@ Para promover um usuário a admin: defina manualmente `role: "admin"` no doc `us
 2. ~~Autenticação real (Firebase Auth + sessão httpOnly)~~ — ✅ feito (ver §4.1, §9).
 3. ~~Upload de foto para Firebase Storage~~ — ✅ feito (ver §3, `src/lib/upload-photo.ts`, `storage.rules`).
 4. ~~Dashboard admin com métricas reais~~ — ✅ feito: `src/lib/admin-metrics.ts` (`getAdminMetrics`) usa agregação `.count()` do Firestore para nº de atletas, sportpages geradas e assinaturas Plus/Premium; `src/app/admin/page.tsx` passa os dados reais como props para `admin-dashboard-client.tsx` (as variações percentuais fictícias que existiam antes foram removidas, não substituídas por dados reais de histórico).
-5. **Busca de atletas** — não existe nenhuma página/endpoint de busca/listagem pública de atletas hoje.
+5. ~~Busca de atletas~~ — ✅ feito (ver §4.7): `company/dashboard` e `club/dashboard` listam e filtram por nome/esporte atletas Plus/Premium que já geraram sportpage (`src/lib/athlete-search.ts`, `src/components/company/athlete-search-section.tsx`). Atleta Básico nunca aparece (por design). **Possível melhoria futura**: busca não normaliza acentos; não há campo de localização (a UI antiga prometia isso no placeholder, removido nesta entrega).
 6. **Envio da sportpage para patrocinadores (plano Plus)** — hoje o atleta só recebe o link para enviar manualmente; falta o canal de distribuição ativo da própria ProSport (e-mail e/ou WhatsApp, ver `docs/whatsapp-integration.md`).
 7. **Envio para mídia (plano Premium)** e **Geração de Mídia com IA** — já citados como "em breve" na própria UI de planos; nenhuma implementação existe ainda.
 8. **Media kit em PDF** — não existe geração de PDF em nenhuma parte do código hoje.
