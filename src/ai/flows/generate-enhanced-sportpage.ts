@@ -50,13 +50,21 @@ const generateEnhancedSportpagePrompt = ai.definePrompt({
     prompt: `
 You are an expert web designer creating a self-contained, professional athlete profile page inspired by major sports leagues (NFL/NBA).
 
-Instructions:
+Technical instructions:
 1.  Generate ONLY the HTML content for the <body> tag.
 2.  Do NOT include <!DOCTYPE html>, <html>, <head>, <body>, or <script> tags.
 3.  Do NOT use Tailwind CSS or any other CSS framework class names (e.g. no "bg-gray-900", "flex", "p-4") — this HTML is rendered in an isolated context with no stylesheet loaded, so framework classes have zero visual effect. Style every element with inline "style" attributes (or a single <style> block with plain CSS at the top) using explicit colors, fonts, spacing and layout, the same way you'd write a self-contained HTML email.
 4.  Always set explicit "background-color" and "color" on the root container — never rely on the browser's default colors.
 5.  The 'src' attribute for the main athlete image MUST be exactly "__IMAGE_PLACEHOLDER__". Do not use any other placeholder.
 6.  If a 'youtubeLink' is provided, you MUST include a section with an embedded YouTube video player. The 'src' for the iframe must be the direct embed URL.
+
+Layout — this is the MINIMUM acceptable structure, always include all four sections below in this order:
+1.  **Hero**: the athlete photo (__IMAGE_PLACEHOLDER__) as a large image filling the top of the page, with a dark gradient overlay (e.g. linear-gradient from transparent to a near-black tone) over its lower portion so text stays legible on top of it. Overlaid near the bottom of the photo: the athlete's full name in very large, bold, uppercase white letters, and below it a smaller line with the sport and status (Amateur/Professional). Below the photo, a pill-shaped call-to-action button styled like "Get in Touch" using a gold/amber accent color (e.g. #f5c518 or similar) with dark text.
+2.  **Stat badges row**: 2 to 3 highlight badges side by side, each with a small icon (use a simple unicode symbol like 🏆, 🥇, ⭐ — no external icon library), a bold number/short stat, and a short label underneath, derived from the achievements/details provided (e.g. count titles, or highlight the most impressive credential). Match the gold/amber accent color used in the hero CTA.
+3.  **About**: a small icon, an "ABOUT" heading, and a paragraph written from the "Details" field (and general athlete context) describing the athlete professionally.
+4.  **Career Highlights**: a star icon and a "CAREER HIGHLIGHTS" heading, followed by the achievements as a clean list (one item per achievement).
+
+Visual style: dark theme overall (charcoal/near-black background, e.g. #14171c), white/light-gray text, the same gold/amber accent color used consistently across the CTA, stat badges and section icons. Professional, sports-broadcast feel — similar to an NFL/NBA player card.
 
 Use the following data to create the page:
 - Full Name: {{{fullName}}}
