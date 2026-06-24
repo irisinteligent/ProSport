@@ -18,6 +18,8 @@ Documentos relacionados: [[marketing-growth]] · [[whatsapp-integration]] · [[b
 
 **ProSport** (nome interno do produto: "ProSport Portfolio") é um SaaS que gera, em minutos e com ajuda de IA, uma página esportiva profissional ("sportpage") e materiais de divulgação para um atleta — substituindo o portfólio amador (PDF, Instagram, currículo) por uma página com link único, pensada para ser enviada a patrocinadores, clubes e imprensa.
 
+**Domínio oficial**: `prosport.ia.br` (registrado no registro.br). ⚠️ Configuração de DNS/custom domain no Firebase App Hosting ainda em andamento — ver §8 (Deploy).
+
 - **Problema que resolve**: atletas amadores e profissionais (artes marciais, futebol, natação, etc.) têm dificuldade de se apresentar profissionalmente a patrocinadores e clubes. Criar uma página/apresentação de qualidade exige tempo, design e texto que a maioria não tem.
 - **Para quem é**: atletas (público primário, pagantes), e do outro lado do mercado — empresas patrocinadoras, clubes e assessorias de imprensa que visualizam as páginas geradas.
 - **Modelo de negócio**: SaaS por assinatura mensal/anual, com 3 planos de atleta (ver `src/app/plans/page.tsx`):
@@ -321,6 +323,8 @@ npm run start           # next start (produção, após build)
 Deploy do Next.js:
 - **Firebase App Hosting** (destino configurado hoje): deploy automático ao fazer push no branch conectado no Firebase Console (App Hosting → Backends). Não há comando manual de deploy no `package.json` para isso.
 - **Vercel** (alternativa suportada pelo código, não configurada): `vercel link` (uma vez) e depois `vercel --prod`.
+
+**Domínio customizado (`prosport.ia.br`)**: ⚠️ em andamento — domínio registrado no registro.br, mas a conexão com o backend do Firebase App Hosting ainda não foi concluída. Configuração não fica em nenhum arquivo do repo (`firebase.json` cobre só a Hosting clássica, não App Hosting); é feita em Firebase Console → App Hosting → backend → Custom domains → Add custom domain, depois adicionando os registros DNS gerados (TXT de verificação + A/CNAME) no painel do registro.br. Confirme no Console se já foi concluído antes de assumir o status.
 
 Testar webhook do Stripe localmente (requer [Stripe CLI](https://stripe.com/docs/stripe-cli) instalada):
 ```bash
