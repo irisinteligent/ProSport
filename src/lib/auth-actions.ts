@@ -94,6 +94,7 @@ export async function signupAthlete(
     });
     return { success: true };
   } catch (err) {
+    console.error("[auth][signupAthlete]", err);
     return { success: false, error: mapAuthError(err) };
   }
 }
@@ -137,6 +138,7 @@ export async function signupCompany(
     await createSessionForIdToken(idToken);
     return { success: true };
   } catch (err) {
+    console.error("[auth][signupCompany]", err);
     return { success: false, error: mapAuthError(err) };
   }
 }
@@ -165,6 +167,7 @@ export async function loginUser(
     const role = userDoc.data()?.role as Role;
     return { success: true, role };
   } catch (err) {
+    console.error("[auth][loginUser]", err);
     return { success: false, error: mapAuthError(err) };
   }
 }
