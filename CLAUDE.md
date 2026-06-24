@@ -64,7 +64,7 @@ Documentos relacionados: [[marketing-growth]] · [[whatsapp-integration]] · [[b
 
 Pontos importantes:
 - **O app Next.js e as Cloud Functions NÃO compartilham código nem o mesmo fluxo de dados.** O Next.js grava sportpages na coleção `sportpages` usando o Admin SDK diretamente do Server Action (`src/lib/storage.ts`). As Functions gravam na coleção separada `landings`, via seu próprio Admin SDK (`functions/src/index.ts`). São dois pipelines paralelos para o mesmo objetivo ("gerar e servir uma página pública"), histórico de duas abordagens construídas em momentos diferentes.
-- **As Cloud Functions não usam IA.** `generateLanding` apenas recebe campos via POST e grava no Firestore; `getLanding` lê e devolve JSON ou um HTML simples gerado por template string local (`renderHTML`). Quem usa Genkit/Gemini é exclusivamente o app Next.js.
+- **As Cloud Functions usam IA só para a bio, via OpenAI (não Genkit/Gemini).** `generateLanding` recebe campos via POST e grava no Firestore; se o campo `bio` não vier no corpo da requisição, chama o GPT-4o-mini (`generateBioWithOpenAI`, usa a secret `OPENAI_API_KEY` via `defineSecret` — ver §5) para gerar uma bio curta a partir de nome/modalidade/conquistas/status amador-profissional. Se a secret não estiver configurada ou a chamada falhar, a função loga o erro e segue sem bio (nunca bloqueia o cadastro do landing). `getLanding` continua sem IA — só lê e devolve JSON ou um HTML simples gerado por template string local (`renderHTML`). Quem usa Genkit/Gemini continua sendo exclusivamente o app Next.js.
 - **O app Flutter só conversa com as Cloud Functions**, via HTTP puro (`package:http`), batendo direto nas URLs públicas das functions (com fallback entre as regiões `southamerica-east1` e `us-central1`). Não usa Firebase SDK nem se comunica com o Next.js.
 
 ### 2.3 Árvore de pastas anotada
@@ -110,6 +110,7 @@ prosport/
 │   │   ├── auth/                       # formulários de login/signup/recuperação de senha — chamam os Server Actions de `src/lib/auth-actions.ts`
 │   │   ├── checkout/checkout-form.tsx  # UI de checkout — chama `createCheckoutSession` e redireciona (`window.location.href`) pro Stripe; sem formulário de cartão local
 │   │   ├── dashboard/athlete-dashboard-client.tsx  # formulário de geração da sportpage (envia foto como base64 data URI — ver §7); recebe o plano real via prop
+│   │   ├── dashboard/send-to-sponsor-form.tsx  # form (Plus/Premium) que chama `sendSportpageToSponsor` para enviar a sportpage por e-mail a um patrocinador (ver §4.8)
 │   │   ├── admin/admin-dashboard-client.tsx
 │   │   ├── company/athlete-search-section.tsx  # Server Component compartilhado por `company/dashboard` e `club/dashboard`: form de busca (GET nativo, sem JS) + cards de resultado (ver §4.7)
 │   │   └── ui/                         # primitivos shadcn/ui (gerados; evite editar a lógica interna, prefira compor por fora)
@@ -123,6 +124,8 @@ prosport/
 │       ├── stripe.ts                   # `getStripe()` — client Stripe instanciado de forma lazy (ver §6.9)
 │       ├── checkout-actions.ts         # Server Action `createCheckoutSession` — cria a Checkout Session e devolve a URL de redirect
 │       ├── billing-actions.ts          # Server Actions `createBillingPortalSession`/`redirectToBillingPortal` — portal do cliente Stripe (gerenciar/cancelar assinatura)
+│       ├── email.ts                    # `getResend()` — client Resend instanciado de forma lazy (mesmo padrão do `getStripe()`, ver §6.9) — e `getEmailFromAddress()`
+│       ├── sponsor-email-actions.ts    # Server Action `sendSportpageToSponsor` — envia a sportpage por e-mail a um patrocinador via Resend (plano Plus/Premium, ver §4.8)
 │       ├── storage.ts                  # CRUD simples da coleção Firestore `sportpages` (apesar do nome, NÃO usa Firebase Storage)
 │       ├── upload-photo.ts             # `uploadAthletePhoto` — sobe a foto do atleta pro Firebase Storage e devolve a download URL (este sim usa Firebase Storage)
 │       ├── admin-metrics.ts            # `getAdminMetrics` — agregações `.count()` do Firestore para o painel admin
@@ -149,11 +152,12 @@ Esta tabela descreve a arquitetura **alvo** pedida para o produto. Onde o item a
 | UI | shadcn/ui + Tailwind CSS + Radix UI + lucide-react | ✅ Implementado |
 | Formulários | react-hook-form + zod | ✅ Implementado |
 | Geração de conteúdo (frontend) | Genkit (`genkit` 1.37, `@genkit-ai/googleai` 1.28) + Gemini (`gemini-1.5-flash-latest`) | ✅ Implementado, em `src/ai/flows/*`. ⚠️ `@genkit-ai/googleai` está deprecated upstream em favor de `@genkit-ai/google-genai` (ainda funciona, sem prazo de remoção anunciado) — migrar é uma decisão separada, não feita aqui |
-| Geração de conteúdo (Cloud Functions) | OpenAI GPT-4o-mini | ❌ Pendente — as Functions hoje só fazem CRUD no Firestore, sem nenhuma chamada de IA (ver §7) |
+| Geração de conteúdo (Cloud Functions) | OpenAI GPT-4o-mini | ✅ Implementado — `generateLanding` chama o GPT-4o-mini (`generateBioWithOpenAI`) para gerar a bio do atleta quando ela não vem no corpo da requisição; falha (secret ausente, erro de rede) é logada e não bloqueia o cadastro (ver §2.2) |
 | Banco de dados | Firebase Firestore | ✅ Implementado (duas coleções paralelas, ver §2.2) |
 | Upload de imagem | Firebase Storage | ✅ Implementado — `src/lib/upload-photo.ts` (`uploadAthletePhoto`) sobe a foto para `sportpages/{slug}/photo.{ext}` no Storage e devolve uma download URL; só a URL é salva no HTML/Firestore |
 | Autenticação | Firebase Auth + sessão via cookie `httpOnly` | ✅ Implementado (`src/lib/auth.ts`, `auth-actions.ts`, `firebase-rest.ts`) — sem Firebase Client SDK, tudo roda no servidor (ver §4.1) |
 | Pagamentos | Stripe Checkout (hosted/redirect) | ✅ Implementado (`src/lib/checkout-actions.ts`, `stripe.ts`, `plans.ts`, webhook em `src/app/api/webhooks/stripe/route.ts`) — sem Stripe Elements, sem Produtos/Preços pré-criados no Dashboard (ver §4.5) |
+| Envio de e-mail | Resend | ✅ Implementado — `src/lib/email.ts` (`getResend()`, lazy igual ao `getStripe()`) + `src/lib/sponsor-email-actions.ts` (`sendSportpageToSponsor`), usado pelo envio da sportpage a patrocinadores (Plus/Premium, ver §4.8). **Falta**: secrets em produção e domínio verificado no Resend (ver §5, §10 item 6) |
 | Backend standalone | Firebase Cloud Functions v2 (Node 22) | ✅ Implementado (`generateLanding`/`getLanding`) |
 | Deploy do app Next.js | Vercel (projeto `prosport`) | ✅ É o destino real de produção hoje (confirmado em 2026-06-24 via `vercel projects ls` — domínio `prosport.ia.br`/`www` apontados pra lá, ver §1) |
 | Deploy alternativo do app Next.js | Firebase App Hosting (Cloud Run) | ⚠️ `apphosting.yaml` está configurado no repo (`firebase-admin.ts` usa credenciais automáticas do Cloud Run quando rodando lá), mas **não há nenhum backend criado** no projeto `prosport-portfolio` (confirmado via `firebase apphosting:backends:list` — lista vazia). Migrar para lá é uma decisão em aberto, não feita ainda |
@@ -199,7 +203,7 @@ Toda a autenticação roda no servidor, sem Firebase Client SDK (ver §6.4 para 
 
 ### 4.4 Geração pela Cloud Function (`generateLanding`/`getLanding`)
 Fluxo independente do Next.js, hoje usado pelo app Flutter de QA:
-1. `POST generateLanding` recebe `plano`, `nome`, `modalidade`, `imagem` (+ campos opcionais `bio`, `contatoEmail`, `redes`, `theme`), normaliza nomes PT/EN, gera um slug e grava/atualiza (`merge: true`) em `landings/{slug}`.
+1. `POST generateLanding` recebe `plano`, `nome`, `modalidade`, `imagem` (+ campos opcionais `bio`, `conquistas`, `amador`, `contatoEmail`, `redes`, `theme`), normaliza nomes PT/EN. Se `bio` não vier no corpo, chama o GPT-4o-mini (`generateBioWithOpenAI`, secret `OPENAI_API_KEY` — ver §5) para gerar uma bio curta a partir de `nome`/`modalidade`/`conquistas`/`amador`; falha na chamada é logada e ignorada (segue sem bio). Depois gera um slug e grava/atualiza (`merge: true`) em `landings/{slug}`.
 2. `GET getLanding?slug=X&format=html|json` lê o documento e devolve JSON, ou renderiza um HTML local (`renderHTML`) — **todo valor é escapado com `escapeHtml()` antes de ir para o HTML** (corrigido — ver §7, era uma XSS).
 
 ### 4.5 Upgrade de plano (✅ pagamento real via Stripe Checkout)
@@ -232,6 +236,17 @@ Qualquer pessoa com o link `/p/{slug}` acessa a sportpage gerada — leitura é 
 
 Validado manualmente criando e depois removendo contas de teste reais no Firebase do projeto (Auth + Firestore): atletas Plus/Premium aparecem, atleta Básico com `athleteProfile` preenchido não aparece (confirma que o filtro é por plano, não só presença do campo), busca por nome/esporte filtra corretamente, e o link "Ver Sportpage" resolve em `/p/{slug}`.
 
+### 4.8 Envio da sportpage por e-mail a patrocinadores, clubes e imprensa (✅ real, só Plus/Premium)
+Primeiro canal de distribuição ativa da própria ProSport (ver §10, itens 6–7 — WhatsApp continua só roadmap, ver [[whatsapp-integration]]).
+
+1. No painel do atleta, depois de gerar a Sport Page Plus/Premium, aparece `<SendToSponsorForm sportpageUrl={...} audienceLabel={...} />` (`src/components/dashboard/send-to-sponsor-form.tsx`) — formulário react-hook-form + zod com e-mail/nome do destinatário e mensagem opcional. `audienceLabel` é só rótulo de UI ("patrocinador" no Plus, "patrocinador/clube/imprensa" no Premium, ver §1) — o backend não diferencia o tipo de destinatário, é só um e-mail.
+2. Ao enviar, chama o Server Action `sendSportpageToSponsor` (`src/lib/sponsor-email-actions.ts`), que confirma sessão real (`getSession()`), `role === "athlete"` e `plan` igual a `"plus"` ou `"premium"` (mesmo critério de negócio da busca de atletas, §4.7) antes de qualquer envio.
+3. O HTML do e-mail é montado com `escapeHtml()` em todo campo livre (`sponsorName`, `message`, URL) antes da interpolação — mesma regra do §6.6 — e enviado via `getResend().emails.send(...)` (`src/lib/email.ts`), usando `getEmailFromAddress()` como remetente.
+4. Falha do Resend (API key ausente, domínio não verificado, erro de rede) é logada e devolve `{ success: false, error }` para o form mostrar um toast — nunca lança erro não tratado.
+5. Plano Básico nunca vê esse formulário (por design, mesmo motivo do §4.7) — e mesmo que chamasse o Server Action diretamente, a checagem de `plan` no servidor bloquearia.
+
+**Pré-requisito de produção**: `RESEND_API_KEY` precisa estar cadastrada (ver §5) e, para enviar de um endereço `@prosport.ia.br` em vez do domínio de teste do Resend, o domínio precisa estar verificado no Resend Dashboard (Domains → Add Domain) com `RESEND_FROM_EMAIL` apontando pro endereço verificado.
+
 ## 5. Variáveis de Ambiente
 
 Nenhum valor real deve aparecer aqui nem em nenhum arquivo versionado — apenas nomes e onde obtê-los.
@@ -245,6 +260,8 @@ Nenhum valor real deve aparecer aqui nem em nenhum arquivo versionado — apenas
 | `FIREBASE_STORAGE_BUCKET` (opcional) | Firebase Console → Storage (nome do bucket, ex. `prosport-portfolio.appspot.com` ou `prosport-portfolio.firebasestorage.app`) | `src/lib/firebase-admin.ts` — se ausente, o Admin SDK usa o bucket padrão do projeto (funciona automaticamente em App Hosting/Cloud Run; defina explicitamente se o bucket padrão não existir ainda ou tiver nome diferente) |
 | `STRIPE_SECRET_KEY` | Stripe Dashboard → Developers → API keys (use a chave **de teste**, `sk_test_...`, em dev) | `src/lib/stripe.ts` — cria a Checkout Session |
 | `STRIPE_WEBHOOK_SECRET` | Local: `stripe listen --forward-to localhost:9003/api/webhooks/stripe` imprime um `whsec_...` de teste. Produção: Stripe Dashboard → Developers → Webhooks → criar endpoint apontando pro domínio real → revela o `whsec_...` daquele endpoint | `src/app/api/webhooks/stripe/route.ts` — verifica a assinatura do webhook antes de processar qualquer evento |
+| `RESEND_API_KEY` | https://resend.com/api-keys | `src/lib/email.ts` (`getResend()`) — envia o e-mail de `sendSportpageToSponsor` (§4.8). Sem ela, `getResend()` lança erro e o Server Action devolve `{ success: false }` (não derruba a aplicação) |
+| `RESEND_FROM_EMAIL` (opcional) | Resend Dashboard → Domains (depois de verificar `prosport.ia.br`) | `src/lib/email.ts` (`getEmailFromAddress()`) — endereço remetente, ex. `"ProSport <contato@prosport.ia.br>"`. Sem essa var, cai no fallback `onboarding@resend.dev` (funciona só em modo de teste do Resend, antes do domínio ser verificado) |
 
 ### Vercel (destino de deploy real do Next.js hoje — projeto `prosport`, confirmado em 2026-06-24)
 | Variável | Onde obter | Como é provisionada |
@@ -253,6 +270,7 @@ Nenhum valor real deve aparecer aqui nem em nenhum arquivo versionado — apenas
 | `FIREBASE_WEB_API_KEY` | Firebase Console (ver tabela local acima) | Project Settings da Vercel → Environment Variables |
 | `FIREBASE_SERVICE_ACCOUNT` | Service account JSON do Firebase, colado como string única na env var | Project Settings da Vercel → Environment Variables — é assim que o Admin SDK autentica fora do Cloud Run (ver `src/lib/firebase-admin.ts`) |
 | `STRIPE_SECRET_KEY` / `STRIPE_WEBHOOK_SECRET` | Mesmas chaves acima | Project Settings da Vercel → Environment Variables |
+| `RESEND_API_KEY` / `RESEND_FROM_EMAIL` | Mesmas chaves acima | Project Settings da Vercel → Environment Variables — **ainda não cadastradas em produção**, ver §10 item 6 |
 
 Use `npx vercel env ls` / `npx vercel env pull` para inspecionar o que já está cadastrado lá (CLI da Vercel não estava logado nem linkado até esta sessão — ver §8 para como autenticar).
 
@@ -260,7 +278,9 @@ Use `npx vercel env ls` / `npx vercel env pull` para inspecionar o que já está
 `apphosting.yaml` na raiz já declara `GEMINI_API_KEY` e `FIREBASE_WEB_API_KEY`, mas **não existe nenhum backend criado** no projeto `prosport-portfolio` (confirmado via `firebase apphosting:backends:list --json` → lista vazia). Migrar para lá é uma decisão em aberto — se feita, ainda faltaria cadastrar as secrets no Secret Manager (`firebase apphosting:secrets:set NOME`) e declarar `STRIPE_SECRET_KEY`/`STRIPE_WEBHOOK_SECRET` no YAML, que hoje não estão lá. `FIREBASE_SERVICE_ACCOUNT` não seria necessária nesse cenário — o Admin SDK usaria credenciais automáticas do Cloud Run.
 
 ### Firebase Cloud Functions (`functions/`, via Secret Manager)
-Nenhuma secret é necessária hoje — `functions/src/index.ts` não chama nenhuma API de IA. Quando a integração real com OpenAI for implementada (§10), cadastre `OPENAI_API_KEY` (https://platform.openai.com/api-keys) via Secret Manager e declare-a no código com `defineSecret`.
+| Variável | Onde obter | Usado por |
+|---|---|---|
+| `OPENAI_API_KEY` (opcional) | https://platform.openai.com/api-keys | `functions/src/index.ts` (`generateBioWithOpenAI`) — gera a bio do atleta via GPT-4o-mini quando `generateLanding` é chamado sem o campo `bio`. Sem a secret cadastrada, a função simplesmente não gera bio automática (retorna `""`) e segue salvando o landing normalmente — não é um requisito bloqueante, é um enhancement |
 
 Gerenciar secrets das Functions: `firebase functions:secrets:set NOME_DA_VARIAVEL` (pede o valor interativamente, nunca via argumento de linha de comando).
 
@@ -349,11 +369,11 @@ npm run deploy            # firebase deploy --only functions
 npm run logs               # firebase functions:log
 npx eslint --ext .js,.ts . [--fix]   # lint (config eslint-config-google)
 ```
-Gerenciar secrets (nenhuma é necessária hoje — exemplo de uso futuro, quando a integração com OpenAI for implementada):
+Gerenciar secrets (`OPENAI_API_KEY` é opcional — sem ela, `generateLanding` só não gera bio automática, ver §5):
 ```bash
 firebase functions:secrets:set OPENAI_API_KEY
-firebase functions:secrets:access OPENAI_API_KEY   # ver quem tem acesso
 ```
+> [!danger] `firebase functions:secrets:access NOME` imprime o VALOR da secret em texto puro no terminal — não é um comando de "ver quem tem acesso" (isso seria `firebase functions:secrets:get NOME`, que só lista metadados/versões). Evite rodar `:access` em qualquer sessão cujo output possa ficar logado; se precisar conferir se uma secret existe, use `:get`.
 
 ### Firestore
 ```bash
@@ -395,17 +415,22 @@ Para promover um usuário a admin: defina manualmente `role: "admin"` no doc `us
 
 ## 10. Integrações Pendentes (priorizado)
 
-1. ~~Pagamento real com Stripe~~ — ✅ feito (Stripe Checkout hosted/redirect, ver §4.5). **Falta**: configurar o endpoint de webhook de produção e as secrets `STRIPE_*` no Secret Manager antes do primeiro deploy (ver §5); rodar com a chave `sk_test_...` até validar tudo, só trocar pra `sk_live_...` quando for cobrar de verdade.
+> [!info] Bug crítico de produção corrigido (2026-06-24)
+> `FIREBASE_SERVICE_ACCOUNT`, `FIREBASE_WEB_API_KEY` e `RESEND_API_KEY` estavam faltando em Production na Vercel (confirmado via `vercel env ls`) — sem `FIREBASE_SERVICE_ACCOUNT`, `firebase-admin.ts` cairia no fallback de Application Default Credentials, que só funciona em Cloud Run/App Hosting, não na Vercel. As 3 secrets foram cadastradas em Production (Project Settings da Vercel → Environment Variables) e reconfirmadas via `vercel env ls production` na mesma sessão. **Falta**: disparar um novo deploy (env vars só valem para deploys criados depois do cadastro) e validar com um teste real de signup/login em `https://prosport.ia.br` pós-deploy. `RESEND_FROM_EMAIL` continua opcional/pendente (ver item 6).
+
+1. ~~Pagamento real com Stripe~~ — ✅ feito (Stripe Checkout hosted/redirect, ver §4.5). `STRIPE_SECRET_KEY`/`STRIPE_WEBHOOK_SECRET` já confirmados cadastrados em Production na Vercel (`vercel env ls`, checado em 2026-06-24). **Falta confirmar manualmente** (não verificável via CLI sem expor a secret): se o endpoint de webhook em produção (Stripe Dashboard → Developers → Webhooks) está apontando pra `https://prosport.ia.br/api/webhooks/stripe`, e se a chave cadastrada já é `sk_live_...` (e não `sk_test_...`) antes de cobrar de verdade.
 2. ~~Autenticação real (Firebase Auth + sessão httpOnly)~~ — ✅ feito (ver §4.1, §9).
 3. ~~Upload de foto para Firebase Storage~~ — ✅ feito (ver §3, `src/lib/upload-photo.ts`, `storage.rules`).
 4. ~~Dashboard admin com métricas reais~~ — ✅ feito: `src/lib/admin-metrics.ts` (`getAdminMetrics`) usa agregação `.count()` do Firestore para nº de atletas, sportpages geradas e assinaturas Plus/Premium; `src/app/admin/page.tsx` passa os dados reais como props para `admin-dashboard-client.tsx` (as variações percentuais fictícias que existiam antes foram removidas, não substituídas por dados reais de histórico).
 5. ~~Busca de atletas~~ — ✅ feito (ver §4.7): `company/dashboard` e `club/dashboard` listam e filtram por nome/esporte atletas Plus/Premium que já geraram sportpage (`src/lib/athlete-search.ts`, `src/components/company/athlete-search-section.tsx`). Atleta Básico nunca aparece (por design). **Possível melhoria futura**: busca não normaliza acentos; não há campo de localização (a UI antiga prometia isso no placeholder, removido nesta entrega).
-6. **Envio da sportpage para patrocinadores (plano Plus)** — hoje o atleta só recebe o link para enviar manualmente; falta o canal de distribuição ativo da própria ProSport (e-mail e/ou WhatsApp, ver `docs/whatsapp-integration.md`).
-7. **Envio para mídia (plano Premium)** e **Geração de Mídia com IA** — já citados como "em breve" na própria UI de planos; nenhuma implementação existe ainda.
-8. **Media kit em PDF** — não existe geração de PDF em nenhuma parte do código hoje.
+6. ~~Envio da sportpage para patrocinadores (plano Plus/Premium)~~ — ✅ feito o canal de e-mail (ver §4.8, `src/lib/sponsor-email-actions.ts`, `src/components/dashboard/send-to-sponsor-form.tsx`). `RESEND_API_KEY` já cadastrada em Production na Vercel (confirmado em 2026-06-24, ver alerta no topo desta seção). **Falta**: verificar o domínio `prosport.ia.br` no Resend Dashboard (Domains → Add Domain) e cadastrar `RESEND_FROM_EMAIL` — até lá, o envio funciona usando o remetente de teste do Resend (`onboarding@resend.dev`). O canal WhatsApp continua só roadmap (ver `docs/whatsapp-integration.md`).
+7. ~~Envio para mídia (plano Premium)~~ — ✅ feito reaproveitando o mesmo canal de e-mail do item 6 (ver §4.8): `SendToSponsorForm` recebe `audienceLabel` e, no plano Premium, o atleta vê "patrocinador, clube ou imprensa" em vez de só "patrocinador" — o backend (`sendSportpageToSponsor`) já era agnóstico de quem é o destinatário, só checava `plan === "plus" || "premium"`. **Geração de Mídia com IA** continua ❌ pendente de propósito: é a própria UI de planos (`src/app/plans/page.tsx`) que marca esse item (e "Análise de Patrocinador") como "(em breve)" — sem uma definição de produto do que "mídia" significa aqui (imagem? vídeo? texto?), implementar agora seria especulativo.
+8. ~~Media kit em PDF~~ — ❌ descartado por decisão de produto (2026-06-24): o atleta deve usar o link da sportpage (`/p/{slug}`) como material de divulgação, não um PDF separado. Não implementar geração de PDF nesta funcionalidade a menos que essa decisão seja revista.
 9. ~~Limpeza de dívida técnica~~ — ✅ feito: `src/apphosting.yaml` duplicado, secret `OPENAI_API_KEY` morto e `genkit-sample.ts` foram removidos (ver §7, itens 4–6).
 10. ~~Portal do cliente Stripe~~ — ✅ feito (`src/lib/billing-actions.ts`, ver §4.5). **Falta**: configurar o Customer Portal no Stripe Dashboard (Settings → Billing → Customer portal) antes de produção — sem isso, `billingPortal.sessions.create` retorna erro.
 11. ~~`npm audit` com 100 vulnerabilidades (3 críticas, 23 altas)~~ — ✅ feito o que é seguro fazer hoje: app Next.js em 69 vulnerabilidades (0 críticas/0 críticas restantes, ver §7 itens 10–12), `functions/` em 27 (0 críticas, 0 altas). O que falta é externo ao projeto: `firebase-functions` ainda não declara suporte oficial a `firebase-admin@14` (por isso `functions/` ficou pinado em `firebase-admin@13.10.0`) e o `genkit` ainda carrega `@opentelemetry/*`/`jaeger-client` antigos sem fix — reavaliar quando essas libs upstream atualizarem.
+12. ~~Geração de conteúdo com IA nas Cloud Functions (OpenAI GPT-4o-mini)~~ — ✅ feito: `generateLanding` gera a bio do atleta via GPT-4o-mini (`generateBioWithOpenAI`, ver §4.4, §5) quando o campo `bio` não vem na requisição. A secret `OPENAI_API_KEY` já está cadastrada no Secret Manager do projeto `prosport-portfolio` (confirmado em 2026-06-24) — nada pendente aqui além de manter a chave rotacionada se algum dia for exposta (ver §9: nunca rode `firebase functions:secrets:access`, só `:get`).
+13. ~~`FIREBASE_SERVICE_ACCOUNT` e `FIREBASE_WEB_API_KEY` faltando em Production na Vercel`~~ — ✅ feito: as duas (+ `RESEND_API_KEY`) foram cadastradas em Production em 2026-06-24 e reconfirmadas via `vercel env ls production` (ver alerta no topo desta seção). **Falta**: disparar um novo deploy pra elas entrarem em vigor e validar com um teste real de signup/login em `https://prosport.ia.br`.
 
 ## 11. Contexto do Produto
 

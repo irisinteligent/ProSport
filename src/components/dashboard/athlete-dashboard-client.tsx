@@ -38,6 +38,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Label } from "@/components/ui/label";
 import { CopyButton } from "@/components/ui/copy-button";
 import { Separator } from "@/components/ui/separator";
+import { SendToSponsorForm } from "@/components/dashboard/send-to-sponsor-form";
 
 const profileFormSchema = z.object({
   fullName: z.string().min(2, "O nome completo é obrigatório."),
@@ -459,13 +460,24 @@ export function AthleteDashboardClient({ currentPlan }: AthleteDashboardClientPr
                     Gerar Sport Page
                   </Button>
                   {plusUrl && (
-                    <div className="mt-4 space-y-4">
+                    <div className="mt-4 space-y-6">
                       <div className="space-y-2">
                          <Label>Link Compartilhável</Label>
                          <div className="flex items-center gap-2">
                            <Input value={new URL(plusUrl, window.location.origin).href} readOnly />
                            <CopyButton textToCopy={new URL(plusUrl, window.location.origin).href}>Copiar</CopyButton>
                          </div>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>
+                          {isPremiumPlan
+                            ? "Enviar por e-mail para patrocinador, clube ou imprensa"
+                            : "Enviar para um patrocinador por e-mail"}
+                        </Label>
+                        <SendToSponsorForm
+                          sportpageUrl={new URL(plusUrl, window.location.origin).href}
+                          audienceLabel={isPremiumPlan ? "patrocinador/clube/imprensa" : "patrocinador"}
+                        />
                       </div>
                     </div>
                   )}

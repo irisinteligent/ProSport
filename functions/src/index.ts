@@ -1,4 +1,5 @@
 import {onRequest} from "firebase-functions/v2/https";
+import {defineSecret} from "firebase-functions/params";
 import {getApps, initializeApp} from "firebase-admin/app";
 import {getFirestore, FieldValue} from "firebase-admin/firestore";
 
@@ -6,6 +7,8 @@ if (!getApps().length) {
   initializeApp();
 }
 const db = getFirestore();
+
+const OPENAI_API_KEY = defineSecret("OPENAI_API_KEY");
 
 // ======= Versão/diagnóstico =======
 const BUILD_ID = "prosport-functions@C:\\PROSPORT | 2025-08-28T00:00-03";
@@ -22,11 +25,60 @@ function slugify(input: string): string {
     .slice(0, 64);
 }
 
+// Gera uma bio curta via OpenAI quando o chamador n\u00e3o envia uma \u2014
+// \u00e9 um enhancement, ent\u00e3o falha silenciosa (loga e segue sem bio)
+// nunca deve bloquear o cadastro do landing.
+async function generateBioWithOpenAI(params: {
+  nome: string;
+  modalidade: string;
+  conquistas: string;
+  amador: boolean;
+}): Promise<string> {
+  const apiKey = OPENAI_API_KEY.value();
+  if (!apiKey) {
+    return "";
+  }
+
+  const status = params.amador ? "amador(a)" : "profissional";
+  const conquistasTrecho = params.conquistas ?
+    ` Conquistas: ${params.conquistas}.` :
+    "";
+  const prompt = `Escreva uma bio curta (2 a 4 frases, em portugu\u00eas do
+Brasil, tom profissional e empolgante) para apresentar ${params.nome},
+atleta de ${params.modalidade}, ${status}, a poss\u00edveis patrocinadores.
+${conquistasTrecho} Responda s\u00f3 com o texto da bio, sem markdown e sem
+aspas.`;
+
+  const resp = await fetch("https://api.openai.com/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model: "gpt-4o-mini",
+      messages: [{role: "user", content: prompt}],
+      temperature: 0.7,
+      max_tokens: 200,
+    }),
+  });
+
+  if (!resp.ok) {
+    throw new Error(`OpenAI respondeu ${resp.status}: ${await resp.text()}`);
+  }
+
+  const json = await resp.json() as {
+    choices?: {message?: {content?: string}}[];
+  };
+  return json.choices?.[0]?.message?.content?.trim() ?? "";
+}
+
 // -------- generateLanding (POST) grava no Firestore e retorna URL ----------
 export const generateLanding = onRequest(
   {
     region: REGIONS,
     cors: false,
+    secrets: [OPENAI_API_KEY],
   },
   async (req, res): Promise<void> => {
     // Headers p/ debug
@@ -79,6 +131,28 @@ export const generateLanding = onRequest(
         return;
       }
 
+      const conquistas =
+        (b["conquistas"] as string | undefined) ??
+        (b["achievements"] as string | undefined) ?? "";
+
+      const amador =
+        (b["amador"] as boolean | undefined) ??
+        (b["isAmateur"] as boolean | undefined) ?? true;
+
+      let bio = (b["bio"] as string | undefined) ?? "";
+      if (!bio) {
+        try {
+          bio = await generateBioWithOpenAI({
+            nome: String(nome),
+            modalidade: String(modalidade),
+            conquistas,
+            amador,
+          });
+        } catch (err) {
+          console.error("[generateLanding][OPENAI_ERROR]", err);
+        }
+      }
+
       const slug = slugify(String(nome));
       const docRef = db.collection("landings").doc(slug);
       const docSnap = await docRef.get();
@@ -91,7 +165,9 @@ export const generateLanding = onRequest(
         modalidade,
         imagem,
         // Campos extras úteis pra layout:
-        bio: (b["bio"] as string | undefined) ?? "",
+        bio,
+        conquistas,
+        amador,
         contatoEmail: (b["contatoEmail"] as string | undefined) ?? (b["contactEmail"] as string | undefined) ?? "",
         redes: (b["redes"] as any) ?? (b["social"] as any) ?? {
           instagram: "",
