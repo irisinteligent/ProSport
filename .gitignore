@@ -76,3 +76,5 @@ firestore-debug.log
 # Artefatos Gradle perdidos na raiz (deveriam estar só em prosport_mobile/android)
 /.gradle/
 /settings.gradle
+
+.vercel
