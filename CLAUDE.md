@@ -18,7 +18,7 @@ Documentos relacionados: [[marketing-growth]] · [[whatsapp-integration]] · [[b
 
 **ProSport** (nome interno do produto: "ProSport Portfolio") é um SaaS que gera, em minutos e com ajuda de IA, uma página esportiva profissional ("sportpage") e materiais de divulgação para um atleta — substituindo o portfólio amador (PDF, Instagram, currículo) por uma página com link único, pensada para ser enviada a patrocinadores, clubes e imprensa.
 
-**Domínio oficial**: `prosport.ia.br` (registrado no registro.br). ⚠️ Configuração de DNS/custom domain no Firebase App Hosting ainda em andamento — ver §8 (Deploy).
+**Domínio oficial**: `prosport.ia.br` (registrado no registro.br). Deploy real de produção é na **Vercel** (não Firebase App Hosting, apesar do `apphosting.yaml` no repo — ver §8). Domínio já adicionado ao projeto na Vercel; ⚠️ falta só o registro DNS no registro.br apontar pra lá — ver §8 (Deploy).
 
 - **Problema que resolve**: atletas amadores e profissionais (artes marciais, futebol, natação, etc.) têm dificuldade de se apresentar profissionalmente a patrocinadores e clubes. Criar uma página/apresentação de qualidade exige tempo, design e texto que a maioria não tem.
 - **Para quem é**: atletas (público primário, pagantes), e do outro lado do mercado — empresas patrocinadoras, clubes e assessorias de imprensa que visualizam as páginas geradas.
@@ -155,8 +155,8 @@ Esta tabela descreve a arquitetura **alvo** pedida para o produto. Onde o item a
 | Autenticação | Firebase Auth + sessão via cookie `httpOnly` | ✅ Implementado (`src/lib/auth.ts`, `auth-actions.ts`, `firebase-rest.ts`) — sem Firebase Client SDK, tudo roda no servidor (ver §4.1) |
 | Pagamentos | Stripe Checkout (hosted/redirect) | ✅ Implementado (`src/lib/checkout-actions.ts`, `stripe.ts`, `plans.ts`, webhook em `src/app/api/webhooks/stripe/route.ts`) — sem Stripe Elements, sem Produtos/Preços pré-criados no Dashboard (ver §4.5) |
 | Backend standalone | Firebase Cloud Functions v2 (Node 22) | ✅ Implementado (`generateLanding`/`getLanding`) |
-| Deploy do app Next.js | Firebase App Hosting (Cloud Run) | ✅ Configurado via `apphosting.yaml` na raiz |
-| Deploy alternativo do app Next.js | Vercel | ⚠️ Suportado pelo código (`firebase-admin.ts` aceita `FIREBASE_SERVICE_ACCOUNT` para isso), mas **não há projeto Vercel vinculado** (sem `.vercel/`, sem `vercel.json`) — confirme com o time qual é o destino real antes de configurar variáveis lá |
+| Deploy do app Next.js | Vercel (projeto `prosport`) | ✅ É o destino real de produção hoje (confirmado em 2026-06-24 via `vercel projects ls` — domínio `prosport.ia.br`/`www` apontados pra lá, ver §1) |
+| Deploy alternativo do app Next.js | Firebase App Hosting (Cloud Run) | ⚠️ `apphosting.yaml` está configurado no repo (`firebase-admin.ts` usa credenciais automáticas do Cloud Run quando rodando lá), mas **não há nenhum backend criado** no projeto `prosport-portfolio` (confirmado via `firebase apphosting:backends:list` — lista vazia). Migrar para lá é uma decisão em aberto, não feita ainda |
 | App mobile | Flutter | ✅ Implementado, mas apenas como ferramenta de QA das Functions, não como app de atleta/usuário final |
 
 ## 4. Fluxos de Negócio
@@ -246,21 +246,18 @@ Nenhum valor real deve aparecer aqui nem em nenhum arquivo versionado — apenas
 | `STRIPE_SECRET_KEY` | Stripe Dashboard → Developers → API keys (use a chave **de teste**, `sk_test_...`, em dev) | `src/lib/stripe.ts` — cria a Checkout Session |
 | `STRIPE_WEBHOOK_SECRET` | Local: `stripe listen --forward-to localhost:9003/api/webhooks/stripe` imprime um `whsec_...` de teste. Produção: Stripe Dashboard → Developers → Webhooks → criar endpoint apontando pro domínio real → revela o `whsec_...` daquele endpoint | `src/app/api/webhooks/stripe/route.ts` — verifica a assinatura do webhook antes de processar qualquer evento |
 
-### Firebase App Hosting (destino de deploy atual do Next.js, via `apphosting.yaml`)
+### Vercel (destino de deploy real do Next.js hoje — projeto `prosport`, confirmado em 2026-06-24)
 | Variável | Onde obter | Como é provisionada |
 |---|---|---|
-| `GEMINI_API_KEY` | Mesma chave do Google AI Studio acima | Cadastrar no Secret Manager (`firebase apphosting:secrets:set GEMINI_API_KEY`) e referenciar em `apphosting.yaml` (já está) |
-| `FIREBASE_WEB_API_KEY` | Mesma chave acima | Já declarada em `apphosting.yaml`; falta só cadastrar o valor no Secret Manager (`firebase apphosting:secrets:set FIREBASE_WEB_API_KEY`) antes do primeiro deploy com auth real |
-| `STRIPE_SECRET_KEY` / `STRIPE_WEBHOOK_SECRET` | Mesmas chaves acima — **trocar pra chave live (`sk_live_...`) e criar o endpoint de webhook de produção só quando o app for cobrar de verdade** | Ainda não declaradas em `apphosting.yaml` — adicionar antes do primeiro deploy com Stripe |
+| `GEMINI_API_KEY` | Google AI Studio | Project Settings da Vercel → Environment Variables |
+| `FIREBASE_WEB_API_KEY` | Firebase Console (ver tabela local acima) | Project Settings da Vercel → Environment Variables |
+| `FIREBASE_SERVICE_ACCOUNT` | Service account JSON do Firebase, colado como string única na env var | Project Settings da Vercel → Environment Variables — é assim que o Admin SDK autentica fora do Cloud Run (ver `src/lib/firebase-admin.ts`) |
+| `STRIPE_SECRET_KEY` / `STRIPE_WEBHOOK_SECRET` | Mesmas chaves acima | Project Settings da Vercel → Environment Variables |
 
-`FIREBASE_SERVICE_ACCOUNT` **não é necessária** no App Hosting — o Admin SDK usa credenciais automáticas do Cloud Run.
+Use `npx vercel env ls` / `npx vercel env pull` para inspecionar o que já está cadastrado lá (CLI da Vercel não estava logado nem linkado até esta sessão — ver §8 para como autenticar).
 
-### Vercel (somente se o time decidir migrar o deploy do Next.js para lá — hoje não está configurado)
-| Variável | Onde obter |
-|---|---|
-| `GEMINI_API_KEY` | Google AI Studio |
-| `FIREBASE_WEB_API_KEY` | Firebase Console (ver tabela local acima) |
-| `FIREBASE_SERVICE_ACCOUNT` | Service account JSON do Firebase, colado como string única na env var (Project Settings da Vercel → Environment Variables) |
+### Firebase App Hosting (alternativa configurada no repo, não usada em produção)
+`apphosting.yaml` na raiz já declara `GEMINI_API_KEY` e `FIREBASE_WEB_API_KEY`, mas **não existe nenhum backend criado** no projeto `prosport-portfolio` (confirmado via `firebase apphosting:backends:list --json` → lista vazia). Migrar para lá é uma decisão em aberto — se feita, ainda faltaria cadastrar as secrets no Secret Manager (`firebase apphosting:secrets:set NOME`) e declarar `STRIPE_SECRET_KEY`/`STRIPE_WEBHOOK_SECRET` no YAML, que hoje não estão lá. `FIREBASE_SERVICE_ACCOUNT` não seria necessária nesse cenário — o Admin SDK usaria credenciais automáticas do Cloud Run.
 
 ### Firebase Cloud Functions (`functions/`, via Secret Manager)
 Nenhuma secret é necessária hoje — `functions/src/index.ts` não chama nenhuma API de IA. Quando a integração real com OpenAI for implementada (§10), cadastre `OPENAI_API_KEY` (https://platform.openai.com/api-keys) via Secret Manager e declare-a no código com `defineSecret`.
@@ -321,10 +318,17 @@ npm run start           # next start (produção, após build)
 > Chamadas HTTPS feitas pelo Node (Admin SDK, download de browsers do Playwright, etc.) podem falhar com `unable to verify the first certificate` — geralmente antivírus/proxy corporativo interceptando TLS. Corrige rodando com `NODE_OPTIONS=--use-system-ca` (ex.: `export NODE_OPTIONS="--use-system-ca" && npm run dev`). Não é um problema do código do projeto.
 
 Deploy do Next.js:
-- **Firebase App Hosting** (destino configurado hoje): deploy automático ao fazer push no branch conectado no Firebase Console (App Hosting → Backends). Não há comando manual de deploy no `package.json` para isso.
-- **Vercel** (alternativa suportada pelo código, não configurada): `vercel link` (uma vez) e depois `vercel --prod`.
+- **Vercel** (destino real de produção — projeto `prosport`, time `iris-marketing-digitaks-projects`): deploy automático a cada push (Git integration da Vercel). CLI local não estava logada/linkada (sem `.vercel/` no repo) até 2026-06-24 — `npx vercel login` (fluxo via device code, funciona mesmo sem `vercel` instalado globalmente) + `npx vercel link` se precisar rodar comandos daqui.
+- **Firebase App Hosting** (alternativa configurada no repo via `apphosting.yaml`, não usada em produção): sem backend criado hoje no projeto `prosport-portfolio` (ver §5). Se for migrar, o fluxo seria criar o backend no Firebase Console (App Hosting → Backends → conectar o repo) e cadastrar as secrets faltantes.
 
-**Domínio customizado (`prosport.ia.br`)**: ⚠️ em andamento — domínio registrado no registro.br, mas a conexão com o backend do Firebase App Hosting ainda não foi concluída. Configuração não fica em nenhum arquivo do repo (`firebase.json` cobre só a Hosting clássica, não App Hosting); é feita em Firebase Console → App Hosting → backend → Custom domains → Add custom domain, depois adicionando os registros DNS gerados (TXT de verificação + A/CNAME) no painel do registro.br. Confirme no Console se já foi concluído antes de assumir o status.
+**Domínio customizado (`prosport.ia.br`)**: ✅ configurado na Vercel em 2026-06-24 (`npx vercel domains add prosport.ia.br prosport` e `www.prosport.ia.br`, projeto `prosport`). Falta o registro DNS no painel do registro.br apontar pra lá:
+
+| Tipo | Nome | Valor |
+|---|---|---|
+| A | `@` | `76.76.21.21` |
+| A | `www` | `76.76.21.21` |
+
+A Vercel verifica automaticamente após a propagação e emite o certificado SSL sozinha. Não há redirect `www` → raiz configurado (só dá pra fazer pelo dashboard da Vercel, aba Domains do projeto, não pelo CLI) — por ora os dois respondem com o mesmo conteúdo. Confirme o status atual com `npx vercel domains inspect prosport.ia.br` antes de assumir que já propagou.
 
 Testar webhook do Stripe localmente (requer [Stripe CLI](https://stripe.com/docs/stripe-cli) instalada):
 ```bash
@@ -374,7 +378,7 @@ flutter run
 - Qualquer chave (`GEMINI_API_KEY`, `OPENAI_API_KEY`, tokens de WhatsApp Business/Evolution API quando existirem).
 
 ### Onde credenciais devem viver
-- **Frontend (Next.js)**: Vercel Environment Variables (se migrar para lá) ou Secret Manager via `apphosting.yaml` (destino atual).
+- **Frontend (Next.js)**: Vercel Environment Variables (destino atual de produção) — ou Secret Manager via `apphosting.yaml` se um dia migrar para Firebase App Hosting.
 - **Cloud Functions**: Firebase Secret Manager (`firebase functions:secrets:set`), nunca hardcoded e nunca em `functions/.env`.
 - **Local**: `.env.local` na raiz, nunca commitado.
 
