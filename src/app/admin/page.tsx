@@ -1,10 +1,24 @@
+import { redirect } from "next/navigation";
 import { Header } from "@/components/header";
 import { AdminDashboardClient } from "@/components/admin/admin-dashboard-client";
 import { getAdminStats } from "./actions";
+import { getSessionUid } from "@/lib/user-actions";
+import { adminDb } from "@/lib/firebase-admin";
 
 export const dynamic = "force-dynamic";
 
+async function isAdmin(uid: string): Promise<boolean> {
+  const snap = await adminDb.collection("users").doc(uid).get();
+  return snap.exists && snap.data()?.role === "admin";
+}
+
 export default async function AdminPage() {
+  const uid = await getSessionUid();
+
+  if (!uid || !(await isAdmin(uid))) {
+    redirect("/dashboard");
+  }
+
   const stats = await getAdminStats();
 
   return (
