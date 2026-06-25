@@ -125,6 +125,7 @@ export function AthleteDashboardClient({ currentPlan }: AthleteDashboardClientPr
         isAmateur: values.isAmateur === "true",
         achievements: values.achievements,
         details: values.details,
+        photoDataUri: photoDataUri || undefined,
       });
       if (result.error) {
         toast({ variant: "destructive", title: "Erro", description: result.error });

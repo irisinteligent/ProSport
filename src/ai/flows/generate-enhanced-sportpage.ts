@@ -1,102 +1,144 @@
-
 'use server';
-/**
- * @fileOverview A flow to generate an enhanced, visually appealing sportpage for an athlete.
- * 
- * This flow takes athlete data and generates an HTML page with a professional,
- * modern design inspired by major sports leagues (NFL, NBA).
- *
- * - generateEnhancedSportpage - A function that handles the sportpage generation.
- */
 
-import {ai} from '@/ai/genkit';
-import { GenerateEnhancedSportpageInputSchema, GenerateEnhancedSportpageOutputSchema, type GenerateEnhancedSportpageInput, type GenerateEnhancedSportpageOutput } from './types';
+import { ai } from '@/ai/genkit';
+import { GenerateEnhancedSportpageInputSchema, type GenerateEnhancedSportpageInput } from './types';
 
-/**
- * Generates an enhanced sportpage by calling the Genkit flow.
- * @param input The athlete's data.
- * @returns An object containing the generated HTML for the sportpage.
- */
-export async function generateEnhancedSportpage(input: GenerateEnhancedSportpageInput): Promise<GenerateEnhancedSportpageOutput> {
+export async function generateEnhancedSportpage(input: GenerateEnhancedSportpageInput): Promise<string> {
   return generateEnhancedSportpageFlow(input);
 }
 
 function getYouTubeEmbedUrl(url: string): string | null {
   if (!url) return null;
-  let videoId = null;
   try {
     const urlObj = new URL(url);
-    if (urlObj.hostname === "youtu.be") {
-      videoId = urlObj.pathname.slice(1);
-    } else if (urlObj.hostname === "www.youtube.com" || urlObj.hostname === "youtube.com") {
-      videoId = urlObj.searchParams.get("v");
-    }
-  } catch (e) {
-    // Invalid URL
-    return null;
-  }
-  
-  if (videoId) {
-    return `https://www.youtube.com/embed/${videoId}`;
-  }
-  return null;
+    let videoId: string | null = null;
+    if (urlObj.hostname === 'youtu.be') videoId = urlObj.pathname.slice(1);
+    else if (urlObj.hostname === 'www.youtube.com' || urlObj.hostname === 'youtube.com') videoId = urlObj.searchParams.get('v');
+    return videoId ? `https://www.youtube.com/embed/${videoId}` : null;
+  } catch { return null; }
 }
-
-const generateEnhancedSportpagePrompt = ai.definePrompt({
-    name: 'generateEnhancedSportpagePrompt',
-    input: { schema: GenerateEnhancedSportpageInputSchema },
-    output: { schema: GenerateEnhancedSportpageOutputSchema },
-    model: 'googleai/gemini-2.5-flash',
-    prompt: `
-You are an expert web designer creating a self-contained, professional athlete profile page inspired by major sports leagues (NFL/NBA).
-
-Technical instructions:
-1.  Generate ONLY the HTML content for the <body> tag.
-2.  Do NOT include <!DOCTYPE html>, <html>, <head>, <body>, or <script> tags.
-3.  Do NOT use Tailwind CSS or any other CSS framework class names (e.g. no "bg-gray-900", "flex", "p-4") — this HTML is rendered in an isolated context with no stylesheet loaded, so framework classes have zero visual effect. Style every element with inline "style" attributes (or a single <style> block with plain CSS at the top) using explicit colors, fonts, spacing and layout, the same way you'd write a self-contained HTML email.
-4.  Always set explicit "background-color" and "color" on the root container — never rely on the browser's default colors.
-5.  The 'src' attribute for the main athlete image MUST be exactly "__IMAGE_PLACEHOLDER__". Do not use any other placeholder.
-6.  If a 'youtubeLink' is provided, you MUST include a section with an embedded YouTube video player. The 'src' for the iframe must be the direct embed URL.
-
-Layout — this is the MINIMUM acceptable structure, always include all four sections below in this order:
-1.  **Hero**: the athlete photo (__IMAGE_PLACEHOLDER__) as a large image filling the top of the page, with a dark gradient overlay (e.g. linear-gradient from transparent to a near-black tone) over its lower portion so text stays legible on top of it. Overlaid near the bottom of the photo: the athlete's full name in very large, bold, uppercase white letters, and below it a smaller line with the sport and status (Amateur/Professional). Below the photo, a pill-shaped call-to-action button styled like "Get in Touch" using a gold/amber accent color (e.g. #f5c518 or similar) with dark text.
-2.  **Stat badges row**: 2 to 3 highlight badges side by side, each with a small icon (use a simple unicode symbol like 🏆, 🥇, ⭐ — no external icon library), a bold number/short stat, and a short label underneath, derived from the achievements/details provided (e.g. count titles, or highlight the most impressive credential). Match the gold/amber accent color used in the hero CTA.
-3.  **About**: a small icon, an "ABOUT" heading, and a paragraph written from the "Details" field (and general athlete context) describing the athlete professionally.
-4.  **Career Highlights**: a star icon and a "CAREER HIGHLIGHTS" heading, followed by the achievements as a clean list (one item per achievement).
-
-Visual style: dark theme overall (charcoal/near-black background, e.g. #14171c), white/light-gray text, the same gold/amber accent color used consistently across the CTA, stat badges and section icons. Professional, sports-broadcast feel — similar to an NFL/NBA player card.
-
-Use the following data to create the page:
-- Full Name: {{{fullName}}}
-- Date of Birth: {{{dateOfBirth}}}
-- Sport: {{{sport}}}
-- Status: {{#if isAmateur}}Amateur{{else}}Professional{{/if}}
-- Details: {{{details}}}
-- Achievements: {{{achievements}}}
-{{#if youtubeLink}}
-- YouTube Video: {{{youtubeLink}}}
-{{/if}}
-`,
-});
 
 const generateEnhancedSportpageFlow = ai.defineFlow(
   {
     name: 'generateEnhancedSportpageFlow',
     inputSchema: GenerateEnhancedSportpageInputSchema,
-    outputSchema: GenerateEnhancedSportpageOutputSchema,
   },
   async (input) => {
-    const embeddableYoutubeLink = input.youtubeLink ? getYouTubeEmbedUrl(input.youtubeLink) : null;
-    
-    const promptInput = {
-      ...input,
-      youtubeLink: embeddableYoutubeLink ?? undefined, // Use the embeddable link for the prompt
-    };
+    const youtubeEmbed = input.youtubeLink ? getYouTubeEmbedUrl(input.youtubeLink) : null;
+    const status = input.isAmateur ? 'Atleta Amador' : 'Atleta Profissional';
 
-    const { output } = await generateEnhancedSportpagePrompt(promptInput);
-    if (!output) {
-      throw new Error("AI failed to generate a response.");
-    }
-    return output;
+    const athleteAge = (() => {
+      try {
+        const [d, m, y] = input.dateOfBirth.split('/');
+        const birth = new Date(Number(y), Number(m) - 1, Number(d));
+        const now = new Date();
+        let age = now.getFullYear() - birth.getFullYear();
+        if (now.getMonth() < birth.getMonth() || (now.getMonth() === birth.getMonth() && now.getDate() < birth.getDate())) age--;
+        return age;
+      } catch { return ''; }
+    })();
+
+    const prompt = `You are an elite sports branding designer. Generate a cinematic, high-impact HTML page for a professional athlete — styled like NFL/NBA player profile pages.
+
+OUTPUT RULES:
+- Return ONLY raw HTML starting with <!DOCTYPE html>
+- No markdown, no code fences, no explanations
+- All content text in Portuguese (Brazil)
+- All CSS inside a single <style> tag in <head>
+- The athlete photo <img> tag MUST have src="__IMAGE_PLACEHOLDER__" exactly as written
+
+EXACT COLOR PALETTE (mandatory):
+- Page background: #0D1810 (very dark forest green/near black)
+- Gold accent: #B8962E
+- White: #FFFFFF
+- Muted text: #8B9E88
+- Section bg: #111D13
+- Card bg: #162019
+
+EXACT PAGE STRUCTURE:
+
+1. TOP NAVIGATION BAR
+   - Fixed or static, full-width, transparent background (no bg color)
+   - Three links left-aligned: "Home" | "Sobre" | "Contato"
+   - Links: white, font-size 14px, letter-spacing 1px, font-family Arial, no underline
+   - Padding: 20px 40px
+
+2. HERO SECTION (full viewport height, position relative)
+   - Background: dark green gradient overlay OVER the athlete photo
+   - The athlete photo must be:
+     <img src="__IMAGE_PLACEHOLDER__" alt="Athlete" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;object-position:center top;z-index:0;opacity:0.65;">
+   - Dark gradient overlay on top of photo:
+     <div style="position:absolute;top:0;left:0;width:100%;height:100%;background:linear-gradient(to right, rgba(13,24,16,0.95) 0%, rgba(13,24,16,0.6) 50%, rgba(13,24,16,0.2) 100%);z-index:1;"></div>
+   - Content overlay (z-index:2, position absolute, bottom 15%, left 40px):
+     * Athlete name in TWO lines: first name / last name — each on its own line
+     * Name font: bold, uppercase, white, 72px on desktop, font-family 'Arial Black' Arial
+     * Line-height: 0.9 for name
+     * Below name: gold CTA button "FALAR COM O ATLETA" (border-radius 6px, padding 14px 36px, background #B8962E, color #000, font-weight bold, font-size 16px)
+   - STATS BAR at the very bottom of the hero (position absolute, bottom 0, full width):
+     * Background: rgba(0,0,0,0.6), backdrop-filter blur(4px)
+     * Three stats side by side with dividers, each centered
+     * Extract 3 concrete stats/numbers from achievements — e.g. "3× Campeão" | "10 Anos de Carreira" | "Atleta ${status}"
+     * Gold number/stat label, white description below in 12px
+
+3. ABOUT SECTION (background #111D13, padding 80px 40px)
+   - Section label: "SOBRE" — gold color, font-size 13px, letter-spacing 3px, uppercase, margin-bottom 12px
+   - Athlete name as h2: white, font-size 36px, Arial Black, margin-bottom 20px
+   - Bio paragraph: 3-4 compelling sentences about the athlete, muted color #8B9E88, font-size 17px, line-height 1.9, max-width 700px
+   - Athlete sport + status badge: gold border pill badge, e.g. "${input.sport} • ${status}", font-size 13px, gold color, border 1px solid #B8962E, padding 6px 18px, border-radius 20px, display inline-block, margin-top 20px
+
+4. CAREER HIGHLIGHTS SECTION (background #0D1810, padding 80px 40px)
+   - Section header: ⭐ "DESTAQUES DA CARREIRA" — gold star emoji + gold text, font-size 13px, letter-spacing 3px, uppercase
+   - Horizontal gold line below header: 60px wide, 2px tall, background #B8962E, margin 12px 0 32px
+   - List of 4-6 career highlights as items, each with:
+     * Gold arrow "→" prefix
+     * White text, font-size 16px, line-height 1.6
+     * Bottom border: 1px solid rgba(184,150,46,0.15), padding-bottom 14px, margin-bottom 14px
+   - Extract these from: ${input.achievements} and ${input.details}
+
+5. SPONSORSHIP CTA SECTION (background #111D13, padding 80px 40px, text-center)
+   - Small gold label: "PATROCÍNIO"
+   - H2: white, "Seja Parte da Jornada"
+   - Paragraph: muted, 2 sentences about sponsorship opportunity in ${input.sport}
+   - Two buttons side by side:
+     * Primary: gold bg, black text, "Ver Proposta Completa"
+     * Secondary: gold border, gold text, transparent bg, "Entrar em Contato"
+${youtubeEmbed ? `
+6. VIDEO SECTION (background #0D1810, padding 60px 40px, text-center)
+   - Section label: "EM AÇÃO" — gold, letter-spacing 3px
+   - YouTube iframe: src="${youtubeEmbed}", width 100%, max-width 800px, height 450px, border 0, border-radius 12px, display block, margin 20px auto
+` : ''}
+6. FOOTER (background #0B140D, padding 30px, text-center)
+   - Muted text #8B9E88, font-size 13px
+   - "© ProSport | Conectando Atletas ao Mundo"
+
+ATHLETE DATA:
+- Full name: ${input.fullName}
+- Age: ${athleteAge} anos
+- Sport: ${input.sport}
+- Status: ${status}
+- Details: ${input.details}
+- Achievements: ${input.achievements}
+
+CRITICAL REMINDERS:
+- The img src must be EXACTLY: __IMAGE_PLACEHOLDER__ (this will be replaced programmatically)
+- Mobile responsive: add @media (max-width: 768px) rules for smaller name font and single-column stats
+- Generate compelling, specific Portuguese text based on the athlete data provided
+- Make it feel cinematic, premium, and professional — like a major sports brand built this page
+
+Generate the complete HTML now:`;
+
+    const { text } = await ai.generate({
+      model: 'googleai/gemini-1.5-flash-latest',
+      prompt,
+      config: { maxOutputTokens: 8192 },
+    });
+
+    if (!text) throw new Error('AI did not return any content.');
+
+    return text
+      .replace(/^```html\s*/i, '')
+      .replace(/^```\s*/i, '')
+      .replace(/\s*```$/i, '')
+      .trim();
   }
 );

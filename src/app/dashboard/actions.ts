@@ -1,112 +1,82 @@
-
 "use server";
 
-import {
-  generateSponsorPresentation,
-} from "@/ai/flows/generate-sponsor-presentation";
+import { generateSponsorPresentation } from "@/ai/flows/generate-sponsor-presentation";
 import type { GenerateSponsorPresentationInput } from "@/ai/flows/types";
-import { setPageContent } from "@/lib/storage";
-import { escapeHtml } from "@/lib/escape-html";
+import { setPageContent, uploadAthletePhoto } from "@/lib/storage";
 import { testAiConnection } from "@/ai/flows/test-ai-connection";
 import { generateEnhancedSportpage } from '@/ai/flows/generate-enhanced-sportpage';
+import { generateBasicSportpage } from '@/ai/flows/generate-basic-sportpage';
 import type { GenerateEnhancedSportpageInput } from '@/ai/flows/types';
-import { uploadAthletePhoto } from '@/lib/upload-photo';
-import { getSession } from '@/lib/auth';
-import { adminDb } from '@/lib/firebase-admin';
 
-const generateSlug = (name: string) => {
-  return name
-    .toLowerCase()
-    .replace(/[^a-z0-9\s-]/g, '')
-    .replace(/\s+/g, '-')
-    .replace(/-+/g, '-');
-};
+const generateSlug = (name: string) =>
+  name.toLowerCase().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-');
 
-export async function createBasicPresentation(
-  data: GenerateSponsorPresentationInput
-) {
+// ─── Basic Plan ──────────────────────────────────────────────────────────────
+
+interface CreateBasicSportpageData extends GenerateSponsorPresentationInput {
+  photoDataUri?: string;
+  contactInfo?: string;
+}
+
+export async function createBasicPresentation(data: CreateBasicSportpageData) {
   try {
-    const { presentation } = await generateSponsorPresentation(data);
     const slug = generateSlug(data.fullName) + `-basic-${Date.now()}`;
-    // For basic presentation, wrap it in a simple preformatted HTML for better viewing
-    const htmlContent = `
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>${escapeHtml(data.fullName)} - Presentation</title>
-      <style>
-        body { font-family: sans-serif; line-height: 1.6; padding: 2rem; background-color: #f4f4f9; color: #333; }
-        pre { white-space: pre-wrap; background-color: #fff; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-      </style>
-    </head>
-    <body>
-      <pre>${escapeHtml(presentation)}</pre>
-    </body>
-    </html>
-    `;
 
-    await setPageContent(slug, htmlContent);
-    const presentationUrl = `/p/${slug}`;
-    return { presentation: htmlContent, presentationUrl };
-  } catch (error) {
-    console.error(error);
-    return { error: "Failed to generate basic presentation." };
+    // Upload photo if provided
+    let photoUrl: string | undefined;
+    if (data.photoDataUri) {
+      photoUrl = await uploadAthletePhoto(data.photoDataUri, slug);
+    }
+
+    const html = await generateBasicSportpage({
+      fullName: data.fullName,
+      dateOfBirth: data.dateOfBirth,
+      sport: data.sport,
+      isAmateur: data.isAmateur,
+      details: data.details,
+      achievements: data.achievements,
+      photoUrl,
+      contactInfo: data.contactInfo,
+    });
+
+    await setPageContent(slug, html);
+    return { presentation: html, presentationUrl: `/p/${slug}` };
+  } catch (error: any) {
+    console.error("createBasicPresentation error:", error);
+    return { error: "Falha ao gerar Sport Page Básica." };
   }
 }
+
+// ─── Plus / Enhanced Plan ────────────────────────────────────────────────────
 
 interface CreateEnhancedSportpageData extends GenerateEnhancedSportpageInput {
   photoDataUri: string;
 }
 
-export async function createEnhancedSportpage(
-  data: CreateEnhancedSportpageData
-) {
+export async function createEnhancedSportpage(data: CreateEnhancedSportpageData) {
   try {
-    const session = await getSession();
-    if (!session || session.role !== "athlete") {
-      return { error: "Sessão inválida. Faça login novamente." };
-    }
-
     const { photoDataUri, ...athleteData } = data;
-    const aiInput: GenerateEnhancedSportpageInput = athleteData;
-    const { html: sportpageHtml } = await generateEnhancedSportpage(aiInput);
-
-    if (!sportpageHtml) {
-      throw new Error("AI did not return HTML content.");
-    }
-
     const slug = generateSlug(data.fullName) + `-plus-${Date.now()}`;
-    const photoUrl = await uploadAthletePhoto(slug, photoDataUri);
-    const finalHtml = sportpageHtml.replace("__IMAGE_PLACEHOLDER__", photoUrl);
+
+    // 1. Upload photo to Firebase Storage
+    const photoUrl = await uploadAthletePhoto(photoDataUri, slug);
+
+    // 2. Generate cinematic HTML via AI
+    const sportpageHtml = await generateEnhancedSportpage(athleteData);
+    if (!sportpageHtml) throw new Error("AI did not return HTML content.");
+
+    // 3. Replace placeholder with real photo URL
+    const finalHtml = sportpageHtml.replace('__IMAGE_PLACEHOLDER__', photoUrl);
 
     await setPageContent(slug, finalHtml);
-    const sportpageUrl = `/p/${slug}`;
-
-    await adminDb.collection("users").doc(session.uid).set(
-      {
-        athleteProfile: {
-          sport: data.sport,
-          isAmateur: data.isAmateur,
-          achievements: data.achievements,
-          photoUrl,
-          slug,
-          sportpageUrl,
-          updatedAt: new Date().toISOString(),
-        },
-      },
-      { merge: true }
-    );
-
-    return { sportpageHtml: finalHtml, sportpageUrl };
+    return { sportpageHtml: finalHtml, sportpageUrl: `/p/${slug}` };
   } catch (error: any) {
-    console.error("Error in createEnhancedSportpage:", error);
-    // Return the specific error message instead of a generic one.
-    return { error: `Failed to generate enhanced sportpage: ${error.message}` };
+    console.error("createEnhancedSportpage error:", error);
+    return { error: `Falha ao gerar Sport Page: ${error.message}` };
   }
 }
 
+// ─── AI Test ─────────────────────────────────────────────────────────────────
 
 export async function performAiConnectionTest() {
   try {
@@ -114,9 +84,7 @@ export async function performAiConnectionTest() {
     return { message: result.message };
   } catch (error) {
     console.error("AI Connection Test Failed:", error);
-    if (error instanceof Error) {
-      return { error: `AI Connection Failed: ${error.message}` };
-    }
+    if (error instanceof Error) return { error: `AI Connection Failed: ${error.message}` };
     return { error: "An unknown error occurred during the AI connection test." };
   }
 }
