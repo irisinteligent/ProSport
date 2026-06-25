@@ -46,6 +46,16 @@ export async function getSessionUid(): Promise<string | null> {
   return cookieStore.get('__session')?.value ?? null;
 }
 
+/** Retorna a role do usuario logado (ex: "admin", "athlete") */
+export async function getUserRole(): Promise<string | null> {
+  const uid = await getSessionUid();
+  if (!uid) return null;
+  const snap = await adminDb.collection('users').doc(uid).get();
+  if (!snap.exists) return null;
+  return snap.data()?.role ?? null;
+}
+
+
 /** Cria perfil do usuario no Firestore apos cadastro */
 export async function createUserProfile(data: {
   uid: string;
