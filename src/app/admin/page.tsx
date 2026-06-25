@@ -2,10 +2,15 @@ import { redirect } from "next/navigation";
 import { Header } from "@/components/header";
 import { AdminDashboardClient } from "@/components/admin/admin-dashboard-client";
 import { getAdminStats } from "./actions";
-import { getSessionUid } from "@/lib/user-actions";
+import { cookies } from "next/headers";
 import { adminDb } from "@/lib/firebase-admin";
 
 export const dynamic = "force-dynamic";
+
+async function getSessionUid(): Promise<string | null> {
+  const cookieStore = await cookies();
+  return cookieStore.get("__session")?.value ?? null;
+}
 
 async function isAdmin(uid: string): Promise<boolean> {
   const snap = await adminDb.collection("users").doc(uid).get();
@@ -14,13 +19,10 @@ async function isAdmin(uid: string): Promise<boolean> {
 
 export default async function AdminPage() {
   const uid = await getSessionUid();
-
   if (!uid || !(await isAdmin(uid))) {
     redirect("/dashboard");
   }
-
   const stats = await getAdminStats();
-
   return (
     <div className="flex min-h-screen w-full flex-col">
       <Header />
