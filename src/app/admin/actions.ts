@@ -1,6 +1,13 @@
 "use server";
 
 import { adminDb } from "@/lib/firebase-admin";
+import { getStripe } from "@/lib/stripe";
+
+export type RevenueStats = {
+  today: number;
+  thisMonth: number;
+  prevMonth: number;
+};
 
 export type AdminStats = {
   totalAthletes: number;
@@ -13,13 +20,81 @@ export type AdminStats = {
     plan: string;
     createdAt: string;
   }[];
+  revenue: RevenueStats;
 };
+
+function toUnix(d: Date): number {
+  return Math.floor(d.getTime() / 1000);
+}
+
+async function fetchRevenue(): Promise<RevenueStats> {
+  try {
+    const stripe = getStripe();
+    const now = new Date();
+
+    // Inicio de hoje (00:00:00)
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+    // Inicio do mes atual
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+    // Inicio e fim do mes anterior
+    const prevMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const prevMonthEnd   = new Date(now.getFullYear(), now.getMonth(), 1);
+
+    // Busca todas as transacoes do mes atual + mes anterior em paralelo
+    const [currentMonthTxs, prevMonthTxs] = await Promise.all([
+      stripe.balanceTransactions.list({
+        type: "charge",
+        created: { gte: toUnix(monthStart) },
+        limit: 100,
+      }),
+      stripe.balanceTransactions.list({
+        type: "charge",
+        created: { gte: toUnix(prevMonthStart), lt: toUnix(prevMonthEnd) },
+        limit: 100,
+      }),
+    ]);
+
+    const todayStartUnix = toUnix(todayStart);
+
+    let today = 0;
+    let thisMonth = 0;
+
+    for (const tx of currentMonthTxs.data) {
+      if (tx.net > 0) {
+        thisMonth += tx.net;
+        if (tx.created >= todayStartUnix) {
+          today += tx.net;
+        }
+      }
+    }
+
+    let prevMonth = 0;
+    for (const tx of prevMonthTxs.data) {
+      if (tx.net > 0) prevMonth += tx.net;
+    }
+
+    // Stripe retorna centavos — divide por 100 para reais
+    return {
+      today:     today / 100,
+      thisMonth: thisMonth / 100,
+      prevMonth: prevMonth / 100,
+    };
+  } catch {
+    // Stripe nao configurado ou erro — retorna zeros
+    return { today: 0, thisMonth: 0, prevMonth: 0 };
+  }
+}
 
 export async function getAdminStats(): Promise<AdminStats> {
   try {
-    const [usersSnap, pagesSnap] = await Promise.all([
-      adminDb.collection("users").get(),
-      adminDb.collection("sportpages").get(),
+    const [[usersSnap, pagesSnap], revenue] = await Promise.all([
+      Promise.all([
+        adminDb.collection("users").get(),
+        adminDb.collection("sportpages").get(),
+      ]),
+      fetchRevenue(),
     ]);
 
     const planCounts = { basic: 0, plus: 0, premium: 0 };
@@ -34,14 +109,16 @@ export async function getAdminStats(): Promise<AdminStats> {
 
       recentUsers.push({
         uid: doc.id,
-        name: data.name || "—",
+        name: data.name || data.fullName || "—",
         email: data.email || "—",
-        plan: plan,
-        createdAt: data.createdAt?.toDate?.()?.toLocaleDateString("pt-BR") ?? "—",
+        plan,
+        createdAt:
+          typeof data.createdAt === "string"
+            ? new Date(data.createdAt).toLocaleDateString("pt-BR")
+            : data.createdAt?.toDate?.()?.toLocaleDateString("pt-BR") ?? "—",
       });
     });
 
-    // Ordena por createdAt desc e pega os 10 mais recentes
     recentUsers.sort((a, b) => {
       if (a.createdAt === "—") return 1;
       if (b.createdAt === "—") return -1;
@@ -53,6 +130,7 @@ export async function getAdminStats(): Promise<AdminStats> {
       totalSportPages: pagesSnap.size,
       planCounts,
       recentUsers: recentUsers.slice(0, 10),
+      revenue,
     };
   } catch (error) {
     console.error("[getAdminStats] erro:", error);
@@ -61,6 +139,7 @@ export async function getAdminStats(): Promise<AdminStats> {
       totalSportPages: 0,
       planCounts: { basic: 0, plus: 0, premium: 0 },
       recentUsers: [],
+      revenue: { today: 0, thisMonth: 0, prevMonth: 0 },
     };
   }
 }
