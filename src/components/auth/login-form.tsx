@@ -1,90 +1,104 @@
-'use client';
+"use client";
 
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
-import { z } from 'zod';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
-import { Loader2 } from 'lucide-react';
-import { useState } from 'react';
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { useState } from "react";
+import { Loader2 } from "lucide-react";
 
-import { auth } from '@/lib/firebase-client';
-import { createSession, getUserRole } from '@/lib/user-actions';
-import { Button } from '@/components/ui/button';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { useToast } from '@/hooks/use-toast';
+import { auth } from "@/lib/firebase-client";
+import { loginUser, loginWithGoogleToken, logoutUser } from "@/lib/auth-actions";
+import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { useToast } from "@/hooks/use-toast";
 
 const formSchema = z.object({
-  email: z.string().email({ message: 'Endereco de e-mail invalido.' }),
-  password: z.string().min(1, { message: 'A senha e obrigatoria.' }),
+  email: z.string().email({ message: "Endereço de e-mail inválido." }),
+  password: z.string().min(1, { message: "A senha é obrigatória." }),
 });
 
 interface LoginFormProps {
-  userType: 'athlete' | 'company' | 'club';
-}
-
-async function redirectAfterLogin(role: string | null, userType: string, router: ReturnType<typeof useRouter>) {
-  if (role === 'admin') {
-    router.push('/admin');
-  } else if (userType === 'company') {
-    router.push('/company/dashboard');
-  } else if (userType === 'club') {
-    router.push('/club/dashboard');
-  } else {
-    router.push('/dashboard');
-  }
+  userType: "athlete" | "company" | "club";
 }
 
 export function LoginForm({ userType }: LoginFormProps) {
   const router = useRouter();
   const { toast } = useToast();
-  const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: { email: '', password: '' },
+    defaultValues: { email: "", password: "" },
   });
 
+  function handleRoleRedirect(role: string) {
+    if (role === "admin") {
+      router.push("/admin");
+    } else if (userType === "athlete" && role === "athlete") {
+      router.push("/dashboard");
+    } else if ((userType === "company" || userType === "club") && role === "company") {
+      router.push(userType === "club" ? "/club/dashboard" : "/company/dashboard");
+    } else {
+      void logoutUser();
+      toast({
+        variant: "destructive",
+        title: "Acesso negado",
+        description: "Esta conta não tem acesso a este portal.",
+      });
+      return false;
+    }
+    return true;
+  }
+
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    setLoading(true);
-    try {
-      const credential = await signInWithEmailAndPassword(auth, values.email, values.password);
-      const idToken = await credential.user.getIdToken();
-      await createSession(idToken);
-      const role = await getUserRole();
-      toast({ title: 'Login bem-sucedido', description: 'Redirecionando...' });
-      await redirectAfterLogin(role, userType, router);
-    } catch (error: any) {
-      const msg =
-        error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password'
-          ? 'Email ou senha incorretos.'
-          : error.code === 'auth/too-many-requests'
-          ? 'Muitas tentativas. Aguarde alguns minutos.'
-          : 'Erro ao fazer login. Tente novamente.';
-      toast({ variant: 'destructive', title: 'Erro de login', description: msg });
-    } finally {
-      setLoading(false);
+    const result = await loginUser(values);
+
+    if (!result.success) {
+      toast({ variant: "destructive", title: "Erro ao entrar", description: result.error });
+      return;
+    }
+
+    const ok = handleRoleRedirect(result.role);
+    if (ok) {
+      toast({ title: "Login bem-sucedido", description: "Redirecionando para o seu painel..." });
     }
   }
 
   async function handleGoogleLogin() {
-    setLoading(true);
+    setGoogleLoading(true);
     try {
       const provider = new GoogleAuthProvider();
       const credential = await signInWithPopup(auth, provider);
       const idToken = await credential.user.getIdToken();
-      await createSession(idToken);
-      const role = await getUserRole();
-      toast({ title: 'Login bem-sucedido', description: 'Redirecionando...' });
-      await redirectAfterLogin(role, userType, router);
-    } catch (error: any) {
-      if (error.code !== 'auth/popup-closed-by-user') {
-        toast({ variant: 'destructive', title: 'Erro de login', description: 'Erro ao entrar com Google. Tente novamente.' });
+      const result = await loginWithGoogleToken(idToken);
+
+      if (!result.success) {
+        toast({ variant: "destructive", title: "Erro ao entrar com Google", description: result.error });
+        return;
+      }
+
+      const ok = handleRoleRedirect(result.role);
+      if (ok) {
+        toast({ title: "Login bem-sucedido", description: "Redirecionando para o seu painel..." });
+      }
+    } catch (err: unknown) {
+      const code = (err as { code?: string }).code;
+      if (code !== "auth/popup-closed-by-user") {
+        toast({ variant: "destructive", title: "Erro", description: "Falha ao entrar com Google." });
       }
     } finally {
-      setLoading(false);
+      setGoogleLoading(false);
     }
   }
 
@@ -95,9 +109,9 @@ export function LoginForm({ userType }: LoginFormProps) {
         variant="outline"
         className="w-full"
         onClick={handleGoogleLogin}
-        disabled={loading}
+        disabled={googleLoading || form.formState.isSubmitting}
       >
-        {loading ? (
+        {googleLoading ? (
           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
         ) : (
           <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -152,8 +166,8 @@ export function LoginForm({ userType }: LoginFormProps) {
               </FormItem>
             )}
           />
-          <Button type="submit" className="w-full font-headline" disabled={loading}>
-            {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+          <Button type="submit" className="w-full font-headline" disabled={form.formState.isSubmitting || googleLoading}>
+            {form.formState.isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
             Entrar
           </Button>
         </form>

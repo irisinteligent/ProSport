@@ -182,6 +182,39 @@ export async function logoutUser(): Promise<void> {
 
 const resetSchema = z.object({ email: z.string().email() });
 
+
+export async function loginWithGoogleToken(
+  idToken: string
+): Promise<ActionResult<{ role: Role }>> {
+  try {
+    const decoded = await adminAuth.verifyIdToken(idToken);
+    const uid = decoded.uid;
+    const email = decoded.email ?? "";
+
+    const userRef = adminDb.collection("users").doc(uid);
+    const userDoc = await userRef.get();
+
+    let role: Role = "athlete";
+    if (!userDoc.exists) {
+      await userRef.set({
+        email,
+        role: "athlete",
+        plan: "basic",
+        fullName: decoded.name ?? "",
+        createdAt: new Date().toISOString(),
+      });
+    } else {
+      role = (userDoc.data()?.role as Role) ?? "athlete";
+    }
+
+    await createSessionForIdToken(idToken);
+    return { success: true, role };
+  } catch (err) {
+    console.error("[auth][loginWithGoogleToken]", err);
+    return { success: false, error: "Erro ao autenticar com Google. Tente novamente." };
+  }
+}
+
 export async function requestPasswordReset(
   input: z.infer<typeof resetSchema>
 ): Promise<ActionResult> {
