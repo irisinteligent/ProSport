@@ -2,19 +2,40 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
+import { buildStyleHint, buildCTA } from './sport-styles';
 
-const BasicSportpageInputSchema = z.object({
+export const BasicSportpageInputSchema = z.object({
   fullName: z.string(),
   dateOfBirth: z.string(),
   sport: z.string(),
   isAmateur: z.boolean(),
   details: z.string(),
   achievements: z.string(),
+  team: z.string().optional(),
+  contact: z.string().optional(),
+  instagramUrl: z.string().optional(),
   photoUrl: z.string().optional(),
-  contactInfo: z.string().optional(),
 });
 
 export type BasicSportpageInput = z.infer<typeof BasicSportpageInputSchema>;
+
+const SYSTEM_BASIC = `Você é um designer web focado em criar propostas de patrocínio claras e profissionais. Gere um arquivo HTML5 completo, responsivo, com CSS embutido. A estética deve ser limpa, estruturada em blocos e inspirada em um folheto digital moderno.
+
+Regras obrigatórias (BASIC):
+- Layout em Blocos de Cores:
+  - Bloco Superior: Crie uma seção superior com cor de fundo sólida (verde escuro profissional, ex: #1E4025). Esta seção deve conter o título "PROPOSTA DE PATROCÍNIO" no topo, seguido pela imagem principal do atleta preenchendo a largura do bloco com bordas superiores arredondadas.
+  - Divisor de Seção: Use uma forma de onda ou curva suave (SVG embutido ou CSS clip-path) para transição elegante entre o bloco superior e a seção de conteúdo abaixo.
+  - Bloco de Conteúdo Principal: Fundo de cor clara e neutra (off-white/bege, ex: #F8F7F4).
+- Estrutura do Conteúdo:
+  - Logo abaixo do divisor, título de seção centralizado (ex: "Visão Geral do Atleta") seguido por parágrafo introdutório.
+  - Grade de três colunas (desktop) / uma coluna (mobile) com cards informativos.
+  - Design dos Cards: fundo de cor sutil, bordas arredondadas, contendo: ÍCONE, TÍTULO em negrito, e texto descritivo.
+- Botão de CTA: No final, botão centralizado com cor principal sólida e texto claro.
+- Tipografia: Fontes sans-serif limpas — "Poppins" para títulos, "Lato" para corpo (Google Fonts).
+- Paleta: verde escuro principal, fundo off-white/bege, texto escuro (#333).
+- Código leve, mobile-first. Alt tags. HTML semântico. CSS em única tag <style> no <head>.
+
+Saída: SOMENTE o HTML final, sem explicações.`;
 
 const generateBasicSportpageFlow = ai.defineFlow(
   {
@@ -22,107 +43,45 @@ const generateBasicSportpageFlow = ai.defineFlow(
     inputSchema: BasicSportpageInputSchema,
   },
   async (input) => {
-    const athleteAge = (() => {
-      try {
-        const [d, m, y] = input.dateOfBirth.split('/');
-        const birth = new Date(Number(y), Number(m) - 1, Number(d));
-        const now = new Date();
-        let age = now.getFullYear() - birth.getFullYear();
-        if (now.getMonth() < birth.getMonth() || (now.getMonth() === birth.getMonth() && now.getDate() < birth.getDate())) age--;
-        return age;
-      } catch { return ''; }
-    })();
+    const styleHint = buildStyleHint(input.sport);
+    const contact = input.contact || 'contato@prosport.com.br';
+    const ctaHtml = buildCTA(input.fullName, contact);
+    const status = input.isAmateur ? 'Amador' : 'Profissional';
 
-    const contact = input.contactInfo || 'Entre em contato para parcerias';
-    const status = input.isAmateur ? 'Atleta Amador' : 'Atleta Profissional';
+    const photoHtml = input.photoUrl
+      ? `<img src="${input.photoUrl}" alt="Foto de ${input.fullName}" style="width:100%;height:420px;object-fit:cover;object-position:top;display:block;">`
+      : `<div style="width:100%;height:300px;background:linear-gradient(135deg,#1E4025,#3A7040);display:flex;align-items:center;justify-content:center;font-size:80px;">\uD83C\uDFC6</div>`;
 
-    const heroBlock = input.photoUrl
-      ? `<img src="${input.photoUrl}" alt="${input.fullName}" style="width:100%;height:420px;object-fit:cover;object-position:top;display:block;">`
-      : `<div style="width:100%;height:420px;background:linear-gradient(135deg,#1E4025 0%,#2D5C35 50%,#3A7040 100%);display:flex;align-items:center;justify-content:center;font-size:90px;">🏆</div>`;
+    const userPrompt = `${styleHint}
 
-    const prompt = `You are a Brazilian sports marketing expert. Generate a complete, self-contained HTML page for an athlete's SPONSORSHIP PROPOSAL.
-
-OUTPUT RULES:
-- Return ONLY raw HTML starting with <!DOCTYPE html>
-- No markdown, no code fences, no explanations
-- All text must be in Portuguese (Brazil)
-- CSS must be entirely inside a single <style> tag in <head>
-
-EXACT COLOR PALETTE (do not deviate):
-- Page background: #F5F0E8 (warm cream/beige)
-- Primary green: #1E4025 (dark forest green)
-- Card background: #E8E2D6 (slightly darker cream)
-- Text: #1a1a1a
-- Accent text: #444
-
-EXACT PAGE STRUCTURE TO IMPLEMENT:
-
-1. HEADER BAR
-   - Full-width, background #1E4025
-   - Centered white text: "PROPOSTA DE PATROCÍNIO"
-   - Font: Arial Black, 24px, letter-spacing 4px, uppercase
-   - Padding: 28px top/bottom
-
-2. HERO IMAGE BLOCK (insert this exact HTML block after header):
-<div style="margin:24px;border-radius:16px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,0.18);">
-${heroBlock}
-</div>
-
-3. ATHLETE OVERVIEW SECTION
-   - Centered h2: "Visão Geral do Atleta" in color #1E4025, font-size 32px, Georgia serif
-   - Below: 2-3 sentence compelling bio paragraph about this specific athlete
-   - Paragraph centered, max-width 640px, font-size 17px, line-height 1.8
-
-4. THREE CARDS ROW (flexbox, centered, gap 16px)
-   Each card: background #E8E2D6, border-radius 14px, padding 28px, text-centered
-   
-   Card 1 - CONQUISTAS:
-   - Icon: 🏆 (font-size 42px)
-   - Title: "Conquistas" (bold, #1E4025, font-size 18px, Arial Black)
-   - 2-3 sentences about the athlete's specific titles and achievements
-   
-   Card 2 - AUDIÊNCIA:
-   - Icon: 📊
-   - Title: "Audiência"
-   - 2-3 sentences about the athlete's fan base and social reach in ${input.sport}
-   
-   Card 3 - OPORTUNIDADES:
-   - Icon: 🤝
-   - Title: "Oportunidades"
-   - 2-3 sentences about unique sponsorship and promotional opportunities
-
-5. CTA BUTTON
-   - Centered dark green button, border-radius 50px, padding 16px 48px
-   - Text: "Entrar em Contato"
-   - Links to: ${contact}
-
-6. FOOTER
-   - Background #1E4025, white text, centered
-   - Text: "© ProSport — Conectando Atletas e Patrocinadores"
-
-ATHLETE DATA TO USE:
-- Name: ${input.fullName}
-- Age: ${athleteAge} anos
-- Sport: ${input.sport}
+DADOS DO ATLETA:
+- Nome: ${input.fullName}
+- Nascimento: ${input.dateOfBirth}
 - Status: ${status}
-- Details: ${input.details}
-- Achievements: ${input.achievements}
-- Contact: ${contact}
+- Modalidade: ${input.sport}
+${input.team ? `- Equipe/Clube: ${input.team}` : ''}
+- Detalhes: ${input.details}
+- Títulos/Conquistas: ${input.achievements}
+- Contato: ${contact}
+${input.instagramUrl ? `- Instagram: ${input.instagramUrl}` : ''}
 
-Now generate the complete HTML page:`;
+IMAGEM DO ATLETA — insira este bloco HTML exatamente na seção hero, dentro do bloco superior verde:
+${photoHtml}
+
+BOTÃO CTA — use este HTML exatamente para o botão de contato:
+${ctaHtml}
+
+Gere agora a página HTML completa seguindo todas as regras do sistema.`;
 
     const { text } = await ai.generate({
-      model: 'googleai/gemini-1.5-flash-latest',
-      prompt,
+      model: 'googleai/gemini-2.0-flash',
+      system: SYSTEM_BASIC,
+      prompt: userPrompt,
+      config: { maxOutputTokens: 8192 },
     });
 
     if (!text) throw new Error('AI did not return content.');
-
-    return text
-      .replace(/^```html\s*/i, '')
-      .replace(/^```\s*/i, '')
-      .replace(/\s*```$/i, '')
-      .trim();
+    return text.replace(/^```html\s*/i, '').replace(/^```\s*/i, '').replace(/\s*```$/i, '').trim();
   }
 );
 

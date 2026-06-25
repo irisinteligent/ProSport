@@ -2,6 +2,7 @@
 
 import { ai } from '@/ai/genkit';
 import { GenerateEnhancedSportpageInputSchema, type GenerateEnhancedSportpageInput } from './types';
+import { buildStyleHint, buildCTA } from './sport-styles';
 
 export async function generateEnhancedSportpage(input: GenerateEnhancedSportpageInput): Promise<string> {
   return generateEnhancedSportpageFlow(input);
@@ -10,13 +11,47 @@ export async function generateEnhancedSportpage(input: GenerateEnhancedSportpage
 function getYouTubeEmbedUrl(url: string): string | null {
   if (!url) return null;
   try {
-    const urlObj = new URL(url);
-    let videoId: string | null = null;
-    if (urlObj.hostname === 'youtu.be') videoId = urlObj.pathname.slice(1);
-    else if (urlObj.hostname === 'www.youtube.com' || urlObj.hostname === 'youtube.com') videoId = urlObj.searchParams.get('v');
-    return videoId ? `https://www.youtube.com/embed/${videoId}` : null;
+    const u = new URL(url);
+    let id: string | null = null;
+    if (u.hostname === 'youtu.be') id = u.pathname.slice(1);
+    else if (u.hostname.includes('youtube.com')) id = u.searchParams.get('v');
+    return id ? `https://www.youtube.com/embed/${id}` : null;
   } catch { return null; }
 }
+
+const SYSTEM_PLUS = `Você é designer sênior. Gere HTML5 completo e responsivo, com CSS embutido, estética moderna e cinematográfica.
+
+Regras obrigatórias (PLUS):
+- Estética de card esportivo cinematográfico com profundidade, luz e microinterações suaves. Use 'transform: scale(1.03)' ou mudança de sombra em 'hover' nos botões e cards. Duração das transições: 150-250ms.
+- Foto do atleta em hero com recorte elegante usando 'clip-path' (polygon ou inset com bordas arredondadas) posicionada parcialmente sobre outros elementos para efeito de camadas (layers).
+- Background temático desfocado atrás da foto. Overlays para garantir legibilidade.
+- Ícones/emoji consistentes nas seções.
+- Paleta alinhada à modalidade (via styleHint), contraste mínimo 4.5:1 (WCAG AA).
+- Layout assimétrico em telas maiores para visual dinâmico. Mobile-first. Respeitar prefers-reduced-motion.
+- Gerar "Descrição do Atleta" (60-110 palavras) com apelo comercial, sem promessas irreais.
+- A tag <img> do atleta DEVE ter src="__IMAGE_PLACEHOLDER__" exatamente assim.
+- CSS em única tag <style> no <head>. Sem frameworks JS/CSS externos (apenas Google Fonts).
+- Acessibilidade: alt tags, HTML semântico.
+
+Saída: SOMENTE o HTML final.`;
+
+const SYSTEM_PREMIUM = `Você é um Diretor de Arte Sênior especializado em design digital para atletas de elite. Gere um arquivo HTML5 completo, mobile-first, com CSS embutido. A estética deve ser idêntica à de um card de jogador premium, como os vistos em apps de esportes modernos (NFL/NBA).
+
+Regras obrigatórias (PREMIUM):
+- Layout de Coluna Única: design vertical otimizado para telas de celular com expansão elegante em desktop.
+- Herói em Camadas (Layers):
+  - A imagem principal do atleta deve ser a camada de fundo da seção do herói.
+  - A tag <img> DEVE ter src="__IMAGE_PLACEHOLDER__" exatamente assim.
+  - Aplique overlay de gradiente escuro na parte inferior da imagem ('linear-gradient(to top, #0A0F0B, transparent)') para fusão suave com o fundo sólido.
+  - Nome do atleta e botão CTA principal devem ficar SOBRE a imagem.
+- Elemento de fundo: número ou símbolo esportivo grande e semi-transparente atrás do nome.
+- Tipografia de Impacto: fonte condensada em maiúsculas ("Oswald" ou "Bebas Neue") com grande destaque para o nome.
+- Seção de Estatísticas (KPIs): conquistas principais logo abaixo do nome, em formato ÍCONE + TEXTO dispostos horizontalmente.
+- Paleta Sofisticada: fundo muito escuro. Branco para texto principal. Uma única cor de destaque (ouro, bronze ou neon vibrante) para CTA, ícones e detalhes.
+- Qualidade e Acessibilidade: contraste WCAG AA. CSS no <head>. ARIA roles, alt tags, HTML semântico (<header>, <main>, <section>).
+- Sem frameworks JS/CSS externos (apenas Google Fonts).
+
+Saída: SOMENTE o HTML final, sem comentários ou explicações.`;
 
 const generateEnhancedSportpageFlow = ai.defineFlow(
   {
@@ -25,120 +60,40 @@ const generateEnhancedSportpageFlow = ai.defineFlow(
   },
   async (input) => {
     const youtubeEmbed = input.youtubeLink ? getYouTubeEmbedUrl(input.youtubeLink) : null;
-    const status = input.isAmateur ? 'Atleta Amador' : 'Atleta Profissional';
+    const styleHint = buildStyleHint(input.sport);
+    const contact = input.contact || 'contato@prosport.com.br';
+    const status = input.isAmateur ? 'Amador' : 'Profissional';
+    const isPremium = input.plan === 'premium';
 
-    const athleteAge = (() => {
-      try {
-        const [d, m, y] = input.dateOfBirth.split('/');
-        const birth = new Date(Number(y), Number(m) - 1, Number(d));
-        const now = new Date();
-        let age = now.getFullYear() - birth.getFullYear();
-        if (now.getMonth() < birth.getMonth() || (now.getMonth() === birth.getMonth() && now.getDate() < birth.getDate())) age--;
-        return age;
-      } catch { return ''; }
-    })();
+    const userPrompt = `${styleHint}
 
-    const prompt = `You are an elite sports branding designer. Generate a cinematic, high-impact HTML page for a professional athlete — styled like NFL/NBA player profile pages.
-
-OUTPUT RULES:
-- Return ONLY raw HTML starting with <!DOCTYPE html>
-- No markdown, no code fences, no explanations
-- All content text in Portuguese (Brazil)
-- All CSS inside a single <style> tag in <head>
-- The athlete photo <img> tag MUST have src="__IMAGE_PLACEHOLDER__" exactly as written
-
-EXACT COLOR PALETTE (mandatory):
-- Page background: #0D1810 (very dark forest green/near black)
-- Gold accent: #B8962E
-- White: #FFFFFF
-- Muted text: #8B9E88
-- Section bg: #111D13
-- Card bg: #162019
-
-EXACT PAGE STRUCTURE:
-
-1. TOP NAVIGATION BAR
-   - Fixed or static, full-width, transparent background (no bg color)
-   - Three links left-aligned: "Home" | "Sobre" | "Contato"
-   - Links: white, font-size 14px, letter-spacing 1px, font-family Arial, no underline
-   - Padding: 20px 40px
-
-2. HERO SECTION (full viewport height, position relative)
-   - Background: dark green gradient overlay OVER the athlete photo
-   - The athlete photo must be:
-     <img src="__IMAGE_PLACEHOLDER__" alt="Athlete" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;object-position:center top;z-index:0;opacity:0.65;">
-   - Dark gradient overlay on top of photo:
-     <div style="position:absolute;top:0;left:0;width:100%;height:100%;background:linear-gradient(to right, rgba(13,24,16,0.95) 0%, rgba(13,24,16,0.6) 50%, rgba(13,24,16,0.2) 100%);z-index:1;"></div>
-   - Content overlay (z-index:2, position absolute, bottom 15%, left 40px):
-     * Athlete name in TWO lines: first name / last name — each on its own line
-     * Name font: bold, uppercase, white, 72px on desktop, font-family 'Arial Black' Arial
-     * Line-height: 0.9 for name
-     * Below name: gold CTA button "FALAR COM O ATLETA" (border-radius 6px, padding 14px 36px, background #B8962E, color #000, font-weight bold, font-size 16px)
-   - STATS BAR at the very bottom of the hero (position absolute, bottom 0, full width):
-     * Background: rgba(0,0,0,0.6), backdrop-filter blur(4px)
-     * Three stats side by side with dividers, each centered
-     * Extract 3 concrete stats/numbers from achievements — e.g. "3× Campeão" | "10 Anos de Carreira" | "Atleta ${status}"
-     * Gold number/stat label, white description below in 12px
-
-3. ABOUT SECTION (background #111D13, padding 80px 40px)
-   - Section label: "SOBRE" — gold color, font-size 13px, letter-spacing 3px, uppercase, margin-bottom 12px
-   - Athlete name as h2: white, font-size 36px, Arial Black, margin-bottom 20px
-   - Bio paragraph: 3-4 compelling sentences about the athlete, muted color #8B9E88, font-size 17px, line-height 1.9, max-width 700px
-   - Athlete sport + status badge: gold border pill badge, e.g. "${input.sport} • ${status}", font-size 13px, gold color, border 1px solid #B8962E, padding 6px 18px, border-radius 20px, display inline-block, margin-top 20px
-
-4. CAREER HIGHLIGHTS SECTION (background #0D1810, padding 80px 40px)
-   - Section header: ⭐ "DESTAQUES DA CARREIRA" — gold star emoji + gold text, font-size 13px, letter-spacing 3px, uppercase
-   - Horizontal gold line below header: 60px wide, 2px tall, background #B8962E, margin 12px 0 32px
-   - List of 4-6 career highlights as items, each with:
-     * Gold arrow "→" prefix
-     * White text, font-size 16px, line-height 1.6
-     * Bottom border: 1px solid rgba(184,150,46,0.15), padding-bottom 14px, margin-bottom 14px
-   - Extract these from: ${input.achievements} and ${input.details}
-
-5. SPONSORSHIP CTA SECTION (background #111D13, padding 80px 40px, text-center)
-   - Small gold label: "PATROCÍNIO"
-   - H2: white, "Seja Parte da Jornada"
-   - Paragraph: muted, 2 sentences about sponsorship opportunity in ${input.sport}
-   - Two buttons side by side:
-     * Primary: gold bg, black text, "Ver Proposta Completa"
-     * Secondary: gold border, gold text, transparent bg, "Entrar em Contato"
-${youtubeEmbed ? `
-6. VIDEO SECTION (background #0D1810, padding 60px 40px, text-center)
-   - Section label: "EM AÇÃO" — gold, letter-spacing 3px
-   - YouTube iframe: src="${youtubeEmbed}", width 100%, max-width 800px, height 450px, border 0, border-radius 12px, display block, margin 20px auto
-` : ''}
-6. FOOTER (background #0B140D, padding 30px, text-center)
-   - Muted text #8B9E88, font-size 13px
-   - "© ProSport | Conectando Atletas ao Mundo"
-
-ATHLETE DATA:
-- Full name: ${input.fullName}
-- Age: ${athleteAge} anos
-- Sport: ${input.sport}
+DADOS DO ATLETA:
+- Nome: ${input.fullName}
+- Nascimento: ${input.dateOfBirth}
 - Status: ${status}
-- Details: ${input.details}
-- Achievements: ${input.achievements}
+- Modalidade: ${input.sport}
+${input.team ? `- Equipe/Clube: ${input.team}` : ''}
+- Detalhes: ${input.details}
+- Títulos/Conquistas: ${input.achievements}
+- Contato: ${contact}
+${input.instagramUrl ? `- Instagram: ${input.instagramUrl}` : ''}
+${input.facebookUrl ? `- Facebook: ${input.facebookUrl}` : ''}
+${youtubeEmbed ? `- Vídeo YouTube (embed): ${youtubeEmbed}` : ''}
 
-CRITICAL REMINDERS:
-- The img src must be EXACTLY: __IMAGE_PLACEHOLDER__ (this will be replaced programmatically)
-- Mobile responsive: add @media (max-width: 768px) rules for smaller name font and single-column stats
-- Generate compelling, specific Portuguese text based on the athlete data provided
-- Make it feel cinematic, premium, and professional — like a major sports brand built this page
+IMAGEM DO ATLETA: A tag <img> do atleta deve ter EXATAMENTE src="__IMAGE_PLACEHOLDER__"
 
-Generate the complete HTML now:`;
+${youtubeEmbed ? `SEÇÃO DE VÍDEO: Inclua um iframe do YouTube com src="${youtubeEmbed}", width 100%, height 450px, border-radius 12px.` : ''}
+
+Gere agora a página HTML completa profissional para este atleta.`;
 
     const { text } = await ai.generate({
-      model: 'googleai/gemini-1.5-flash-latest',
-      prompt,
+      model: 'googleai/gemini-2.0-flash',
+      system: isPremium ? SYSTEM_PREMIUM : SYSTEM_PLUS,
+      prompt: userPrompt,
       config: { maxOutputTokens: 8192 },
     });
 
     if (!text) throw new Error('AI did not return any content.');
-
-    return text
-      .replace(/^```html\s*/i, '')
-      .replace(/^```\s*/i, '')
-      .replace(/\s*```$/i, '')
-      .trim();
+    return text.replace(/^```html\s*/i, '').replace(/^```\s*/i, '').replace(/\s*```$/i, '').trim();
   }
 );

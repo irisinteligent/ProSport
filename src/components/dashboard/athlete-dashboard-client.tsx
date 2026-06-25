@@ -47,8 +47,11 @@ const profileFormSchema = z.object({
   }),
   sport: z.string().min(2, "O esporte é obrigatório."),
   isAmateur: z.string({ required_error: "Por favor, selecione um status." }),
+  team: z.string().optional(),
+  contact: z.string().min(1, "O contato é obrigatório."),
   details: z.string().min(1, "Os detalhes são obrigatórios."),
   achievements: z.string().min(1, "As conquistas são obrigatórias."),
+  instagramUrl: z.string().url("URL inválida").optional().or(z.literal('')),
   photo: z.any().optional(),
   youtubeLink: z.string().url("Por favor, insira uma URL válida do YouTube.").optional().or(z.literal('')),
 });
@@ -80,8 +83,11 @@ export function AthleteDashboardClient({ currentPlan }: AthleteDashboardClientPr
       fullName: "",
       sport: "",
       isAmateur: undefined,
+      team: "",
+      contact: "",
       details: "",
       achievements: "",
+      instagramUrl: "",
       photo: undefined,
       youtubeLink: "",
     }
@@ -125,6 +131,9 @@ export function AthleteDashboardClient({ currentPlan }: AthleteDashboardClientPr
         isAmateur: values.isAmateur === "true",
         achievements: values.achievements,
         details: values.details,
+        team: values.team || undefined,
+        contact: values.contact,
+        instagramUrl: values.instagramUrl || undefined,
         photoDataUri: photoDataUri || undefined,
       });
       if (result.error) {
@@ -164,8 +173,12 @@ export function AthleteDashboardClient({ currentPlan }: AthleteDashboardClientPr
         isAmateur: values.isAmateur === "true",
         details: values.details,
         achievements: values.achievements,
+        team: values.team || undefined,
+        contact: values.contact,
+        instagramUrl: values.instagramUrl || undefined,
         photoDataUri: photoDataUri,
         youtubeLink: values.youtubeLink,
+        plan: userPlan === 'premium' ? 'premium' as const : 'plus' as const,
       };
       
       const result = await createEnhancedSportpage(dataToSend);
@@ -291,7 +304,7 @@ export function AthleteDashboardClient({ currentPlan }: AthleteDashboardClientPr
               name="sport"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Esporte</FormLabel>
+                  <FormLabel>Esporte / Modalidade</FormLabel>
                   <FormControl>
                     <Input placeholder="ex: Jiu-Jitsu Brasileiro" {...field} />
                   </FormControl>
@@ -299,6 +312,35 @@ export function AthleteDashboardClient({ currentPlan }: AthleteDashboardClientPr
                 </FormItem>
               )}
             />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <FormField
+                control={form.control}
+                name="team"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Equipe / Clube</FormLabel>
+                    <FormControl>
+                      <Input placeholder="ex: Alliance BJJ" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="contact"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Contato (WhatsApp ou Email)</FormLabel>
+                    <FormControl>
+                      <Input placeholder="ex: +55 11 99999-9999 ou email@exemplo.com" {...field} />
+                    </FormControl>
+                    <FormDescription>Usado no botão de CTA da sua sport page.</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
             <FormField
               control={form.control}
               name="isAmateur"
@@ -364,6 +406,19 @@ export function AthleteDashboardClient({ currentPlan }: AthleteDashboardClientPr
                       className="resize-none"
                       {...field}
                     />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="instagramUrl"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Instagram (opcional)</FormLabel>
+                  <FormControl>
+                    <Input placeholder="https://instagram.com/seuuser" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

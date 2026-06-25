@@ -9,20 +9,22 @@ import { generateBasicSportpage } from '@/ai/flows/generate-basic-sportpage';
 import type { GenerateEnhancedSportpageInput } from '@/ai/flows/types';
 
 const generateSlug = (name: string) =>
-  name.toLowerCase().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-');
+  name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-');
 
 // ─── Basic Plan ──────────────────────────────────────────────────────────────
 
 interface CreateBasicSportpageData extends GenerateSponsorPresentationInput {
   photoDataUri?: string;
-  contactInfo?: string;
+  team?: string;
+  contact?: string;
+  instagramUrl?: string;
 }
 
 export async function createBasicPresentation(data: CreateBasicSportpageData) {
   try {
     const slug = generateSlug(data.fullName) + `-basic-${Date.now()}`;
 
-    // Upload photo if provided
     let photoUrl: string | undefined;
     if (data.photoDataUri) {
       photoUrl = await uploadAthletePhoto(data.photoDataUri, slug);
@@ -35,8 +37,10 @@ export async function createBasicPresentation(data: CreateBasicSportpageData) {
       isAmateur: data.isAmateur,
       details: data.details,
       achievements: data.achievements,
+      team: data.team,
+      contact: data.contact,
+      instagramUrl: data.instagramUrl,
       photoUrl,
-      contactInfo: data.contactInfo,
     });
 
     await setPageContent(slug, html);
@@ -47,7 +51,7 @@ export async function createBasicPresentation(data: CreateBasicSportpageData) {
   }
 }
 
-// ─── Plus / Enhanced Plan ────────────────────────────────────────────────────
+// ─── Plus / Premium Plan ─────────────────────────────────────────────────────
 
 interface CreateEnhancedSportpageData extends GenerateEnhancedSportpageInput {
   photoDataUri: string;
@@ -58,16 +62,11 @@ export async function createEnhancedSportpage(data: CreateEnhancedSportpageData)
     const { photoDataUri, ...athleteData } = data;
     const slug = generateSlug(data.fullName) + `-plus-${Date.now()}`;
 
-    // 1. Upload photo to Firebase Storage
     const photoUrl = await uploadAthletePhoto(photoDataUri, slug);
-
-    // 2. Generate cinematic HTML via AI
     const sportpageHtml = await generateEnhancedSportpage(athleteData);
     if (!sportpageHtml) throw new Error("AI did not return HTML content.");
 
-    // 3. Replace placeholder with real photo URL
     const finalHtml = sportpageHtml.replace('__IMAGE_PLACEHOLDER__', photoUrl);
-
     await setPageContent(slug, finalHtml);
     return { sportpageHtml: finalHtml, sportpageUrl: `/p/${slug}` };
   } catch (error: any) {
