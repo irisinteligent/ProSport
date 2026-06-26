@@ -1,5 +1,3 @@
-'use server';
-
 import { ai } from '@/ai/genkit';
 import { GenerateEnhancedSportpageInputSchema, type GenerateEnhancedSportpageInput } from './types';
 import { buildStyleHint, buildCTA } from './sport-styles';

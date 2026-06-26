@@ -1,5 +1,3 @@
-'use server';
-
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 import { buildStyleHint, buildCTA } from './sport-styles';
