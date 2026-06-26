@@ -85,7 +85,7 @@ export async function createEnhancedSportpage(data: CreateEnhancedSportpageData)
       throw new Error(`AI retornou HTML incompleto (${sportpageHtml?.length ?? 0} chars). Tente novamente.`);
     }
 
-    const finalHtml = sportpageHtml.replace('__IMAGE_PLACEHOLDER__', photoUrl);
+    const finalHtml = sportpageHtml.split('__IMAGE_PLACEHOLDER__').join(photoUrl);
     await setPageContent(slug, finalHtml);
     return { sportpageHtml: finalHtml, sportpageUrl: `/p/${slug}` };
   } catch (error: any) {
