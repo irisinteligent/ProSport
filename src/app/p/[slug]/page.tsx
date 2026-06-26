@@ -43,9 +43,9 @@ export default async function SportPage({
   return (
     <iframe
       srcDoc={ensureVisibleBackground(content)}
-      style={{ width: '100%', height: '100vh', border: 'none', display: 'block' }}
+      style={{ width: '100%', height: '100dvh', border: 'none', display: 'block' }}
       sandbox="allow-scripts"
-      title="Sport Page"
+      title={`Sport Page`}
     />
   );
 }

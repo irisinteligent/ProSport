@@ -79,7 +79,16 @@ Gere agora a página HTML completa seguindo todas as regras do sistema.`;
     });
 
     if (!text) throw new Error('AI did not return content.');
-    return text.replace(/^```html\s*/i, '').replace(/^```\s*/i, '').replace(/\s*```$/i, '').trim();
+    // Remove markdown fences que o Gemini às vezes insere antes/depois do HTML
+    const cleaned = text
+      .replace(/^```html\s*/i, '')
+      .replace(/^```\s*/i, '')
+      .replace(/\s*```$/i, '')
+      .trim();
+    if (!cleaned || cleaned.length < 200) {
+      throw new Error(`Gemini retornou HTML incompleto (${cleaned.length} chars).`);
+    }
+    return cleaned;
   }
 );
 

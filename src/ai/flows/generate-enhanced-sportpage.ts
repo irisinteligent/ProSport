@@ -92,6 +92,14 @@ Gere agora a página HTML completa profissional para este atleta.`;
     });
 
     if (!text) throw new Error('AI did not return any content.');
-    return text.replace(/^```html\s*/i, '').replace(/^```\s*/i, '').replace(/\s*```$/i, '').trim();
+    const cleaned = text
+      .replace(/^```html\s*/i, '')
+      .replace(/^```\s*/i, '')
+      .replace(/\s*```$/i, '')
+      .trim();
+    if (!cleaned || cleaned.length < 200) {
+      throw new Error(`Gemini retornou HTML incompleto (${cleaned.length} chars).`);
+    }
+    return cleaned;
   }
 );

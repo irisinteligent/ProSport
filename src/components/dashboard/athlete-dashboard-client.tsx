@@ -112,9 +112,9 @@ export function AthleteDashboardClient({ currentPlan }: AthleteDashboardClientPr
     }
   };
 
-  const handleGenerateBasic = () => {
-    form.trigger();
-    if (!form.formState.isValid) {
+  const handleGenerateBasic = async () => {
+    const isValid = await form.trigger();
+    if (!isValid) {
       toast({
         variant: "destructive",
         title: "Formulário Inválido",
@@ -146,9 +146,9 @@ export function AthleteDashboardClient({ currentPlan }: AthleteDashboardClientPr
     });
   };
 
-  const handleGeneratePlus = () => {
-    form.trigger();
-    if (!form.formState.isValid) {
+  const handleGeneratePlus = async () => {
+    const isValid = await form.trigger();
+    if (!isValid) {
        toast({
         variant: "destructive",
         title: "Formulário Inválido",

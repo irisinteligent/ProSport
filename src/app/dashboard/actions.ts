@@ -2,7 +2,8 @@
 
 import { generateSponsorPresentation } from "@/ai/flows/generate-sponsor-presentation";
 import type { GenerateSponsorPresentationInput } from "@/ai/flows/types";
-import { setPageContent, uploadAthletePhoto } from "@/lib/storage";
+import { setPageContent } from "@/lib/storage";
+import { uploadAthletePhoto } from "@/lib/upload-photo";
 import { testAiConnection } from "@/ai/flows/test-ai-connection";
 import { generateEnhancedSportpage } from '@/ai/flows/generate-enhanced-sportpage';
 import { generateBasicSportpage } from '@/ai/flows/generate-basic-sportpage';
@@ -27,7 +28,7 @@ export async function createBasicPresentation(data: CreateBasicSportpageData) {
 
     let photoUrl: string | undefined;
     if (data.photoDataUri) {
-      photoUrl = await uploadAthletePhoto(data.photoDataUri, slug);
+      photoUrl = await uploadAthletePhoto(slug, data.photoDataUri);
     }
 
     const html = await generateBasicSportpage({
@@ -42,6 +43,11 @@ export async function createBasicPresentation(data: CreateBasicSportpageData) {
       instagramUrl: data.instagramUrl,
       photoUrl,
     });
+
+    // Garante que a IA retornou HTML válido (mínimo de 500 chars com tag html/body)
+    if (!html || html.length < 500 || !/<html/i.test(html)) {
+      throw new Error(`IA retornou conteúdo inválido (${html?.length ?? 0} chars). Tente novamente.`);
+    }
 
     await setPageContent(slug, html);
     return { presentation: html, presentationUrl: `/p/${slug}` };
@@ -62,7 +68,7 @@ export async function createEnhancedSportpage(data: CreateEnhancedSportpageData)
     const { photoDataUri, ...athleteData } = data;
     const slug = generateSlug(data.fullName) + `-plus-${Date.now()}`;
 
-    const photoUrl = await uploadAthletePhoto(photoDataUri, slug);
+    const photoUrl = await uploadAthletePhoto(slug, photoDataUri);
     const sportpageHtml = await generateEnhancedSportpage(athleteData);
     if (!sportpageHtml) throw new Error("AI did not return HTML content.");
 
