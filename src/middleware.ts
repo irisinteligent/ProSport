@@ -5,7 +5,7 @@ const PROTECTED = ["/dashboard", "/admin", "/company/dashboard", "/club/dashboar
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const session = request.cookies.get("session")?.value;
+  const session = request.cookies.get("__session")?.value ?? request.cookies.get("session")?.value;
 
   const isProtected = PROTECTED.some((p) => pathname.startsWith(p));
 
