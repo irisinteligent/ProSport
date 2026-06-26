@@ -72,7 +72,7 @@ ${ctaHtml}
 Gere agora a página HTML completa seguindo todas as regras do sistema.`;
 
     const { text } = await ai.generate({
-      model: 'googleai/gemini-2.0-flash',
+      model: 'googleai/gemini-1.5-flash-latest',
       system: SYSTEM_BASIC,
       prompt: userPrompt,
       config: { maxOutputTokens: 8192 },
