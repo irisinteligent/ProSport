@@ -85,7 +85,7 @@ ${youtubeEmbed ? `SEÇÃO DE VÍDEO: Inclua um iframe do YouTube com src="${yout
 Gere agora a página HTML completa profissional para este atleta.`;
 
     const { text } = await ai.generate({
-      model: 'googleai/gemini-1.5-flash',
+      model: 'googleai/gemini-2.5-flash',
       system: isPremium ? SYSTEM_PREMIUM : SYSTEM_PLUS,
       prompt: userPrompt,
       config: { maxOutputTokens: 8192 },
