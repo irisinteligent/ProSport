@@ -75,7 +75,7 @@ Gere agora a página HTML completa seguindo todas as regras do sistema.`;
       model: 'googleai/gemini-2.5-flash',
       system: SYSTEM_BASIC,
       prompt: userPrompt,
-      config: { maxOutputTokens: 8192 },
+      config: { maxOutputTokens: 32768, thinkingConfig: { thinkingBudget: 0 } },
     });
 
     if (!text) throw new Error('AI did not return content.');

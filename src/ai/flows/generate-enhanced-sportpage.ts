@@ -88,7 +88,7 @@ Gere agora a página HTML completa profissional para este atleta.`;
       model: 'googleai/gemini-2.5-flash',
       system: isPremium ? SYSTEM_PREMIUM : SYSTEM_PLUS,
       prompt: userPrompt,
-      config: { maxOutputTokens: 8192 },
+      config: { maxOutputTokens: 32768, thinkingConfig: { thinkingBudget: 0 } },
     });
 
     if (!text) throw new Error('AI did not return any content.');

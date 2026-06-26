@@ -44,9 +44,15 @@ export async function createBasicPresentation(data: CreateBasicSportpageData) {
       photoUrl,
     });
 
-    // Garante que a IA retornou HTML válido (mínimo de 500 chars com tag html/body)
-    if (!html || html.length < 500 || !/<html/i.test(html)) {
-      throw new Error(`IA retornou conteúdo inválido (${html?.length ?? 0} chars). Tente novamente.`);
+    // Garante que a IA retornou HTML completo (com <html>, <body> e conteúdo mínimo)
+    if (
+      !html ||
+      html.length < 1500 ||
+      !/<html/i.test(html) ||
+      !/<body[\s>]/i.test(html) ||
+      !/<\/body>/i.test(html)
+    ) {
+      throw new Error(`IA retornou HTML incompleto (${html?.length ?? 0} chars, body ausente). Tente novamente.`);
     }
 
     await setPageContent(slug, html);
@@ -70,7 +76,14 @@ export async function createEnhancedSportpage(data: CreateEnhancedSportpageData)
 
     const photoUrl = await uploadAthletePhoto(slug, photoDataUri);
     const sportpageHtml = await generateEnhancedSportpage(athleteData);
-    if (!sportpageHtml) throw new Error("AI did not return HTML content.");
+    if (
+      !sportpageHtml ||
+      sportpageHtml.length < 2000 ||
+      !/<body[\s>]/i.test(sportpageHtml) ||
+      !/<\/body>/i.test(sportpageHtml)
+    ) {
+      throw new Error(`AI retornou HTML incompleto (${sportpageHtml?.length ?? 0} chars). Tente novamente.`);
+    }
 
     const finalHtml = sportpageHtml.replace('__IMAGE_PLACEHOLDER__', photoUrl);
     await setPageContent(slug, finalHtml);
