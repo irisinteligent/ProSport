@@ -14,7 +14,8 @@ import { buildKontextPrompt } from './sport-scenes';
  *
  * Variáveis de ambiente (Vercel → Environment Variables):
  *   - FAL_KEY ...............  obrigatória. Sem ela, devolve a foto crua.
- *   - FAL_KONTEXT_MODEL ....  opcional. Default: 'fal-ai/flux-pro/kontext'.
+ *   - FAL_EDIT_MODEL .......  opcional. Default: 'fal-ai/nano-banana-2/edit'.
+ *                            (aceita também FAL_KONTEXT_MODEL por compatibilidade)
  *   - FAL_UPSCALE ..........  opcional. '1'/'true' liga o upscale.
  *   - FAL_UPSCALE_MODEL ....  opcional. Default: 'fal-ai/clarity-upscaler'.
  *   - FAL_UPSCALE_FACTOR ...  opcional. Default: 2.
@@ -24,7 +25,7 @@ import { buildKontextPrompt } from './sport-scenes';
  * a geração da sportpage nunca é bloqueada.
  */
 
-const DEFAULT_KONTEXT_MODEL = 'fal-ai/flux-pro/kontext';
+const DEFAULT_EDIT_MODEL = 'fal-ai/nano-banana-2/edit';
 const DEFAULT_UPSCALE_MODEL = 'fal-ai/clarity-upscaler';
 
 export async function composeAthleteHero(
@@ -37,7 +38,7 @@ export async function composeAthleteHero(
 
   try {
     // 1) Composição (troca de fundo + reiluminação)
-    const composedUrl = await runKontext(key, photoUrl, sport);
+    const composedUrl = await runEditModel(key, photoUrl, sport);
     if (!composedUrl) return photoUrl;
 
     // 2) Upscale opcional
@@ -54,22 +55,33 @@ export async function composeAthleteHero(
   }
 }
 
-async function runKontext(key: string, photoUrl: string, sport: string): Promise<string | null> {
-  const model = process.env.FAL_KONTEXT_MODEL || DEFAULT_KONTEXT_MODEL;
+async function runEditModel(key: string, photoUrl: string, sport: string): Promise<string | null> {
+  const model =
+    process.env.FAL_EDIT_MODEL || process.env.FAL_KONTEXT_MODEL || DEFAULT_EDIT_MODEL;
+  const prompt = buildKontextPrompt(sport);
+
+  // Formato da requisição varia por modelo: Nano Banana (e a maioria dos modelos
+  // de edição) usa `image_urls` (array); os modelos FLUX Kontext usam `image_url`
+  // (único) + parâmetros do Flux.
+  const isKontext = model.includes('kontext');
+  const body = isKontext
+    ? {
+        prompt,
+        image_url: photoUrl,
+        guidance_scale: 3.5,
+        num_inference_steps: 34,
+        output_format: 'jpeg',
+        safety_tolerance: '2',
+      }
+    : { prompt, image_urls: [photoUrl] };
+
   const res = await fetch(`https://fal.run/${model}`, {
     method: 'POST',
     headers: { Authorization: `Key ${key}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      prompt: buildKontextPrompt(sport),
-      image_url: photoUrl,
-      guidance_scale: 3.5,
-      num_inference_steps: 34,
-      output_format: 'jpeg',
-      safety_tolerance: '2',
-    }),
+    body: JSON.stringify(body),
   });
   if (!res.ok) {
-    console.error('composeAthleteHero: erro Kontext', res.status, (await res.text().catch(() => '')).slice(0, 500));
+    console.error('composeAthleteHero: erro do modelo de edição', res.status, (await res.text().catch(() => '')).slice(0, 500));
     return null;
   }
   return extractImageUrl(await res.json());

@@ -17,74 +17,72 @@ function getYouTubeEmbedUrl(url: string): string | null {
   } catch { return null; }
 }
 
-const SYSTEM_PLUS = `Você é um designer web sênior especializado em landing pages esportivas para atletas. Gere UM arquivo HTML5 COMPLETO e responsivo (com <!DOCTYPE html>, <html>, <head> e <body>), com TODO o CSS em uma única tag <style> no <head>. Estética moderna, cinematográfica e profissional, no nível de um site de atleta de elite.
+const SYSTEM_PLUS = `Você é um Diretor de Arte sênior. Gere UM arquivo HTML5 COMPLETO e responsivo (com <!DOCTYPE html>, <html>, <head> e <body>), com TODO o CSS em uma única tag <style> no <head>. O estilo é EDITORIAL e CINEMATOGRÁFICO, de COLUNA ÚNICA, dominado por uma grande foto do atleta — como uma capa de revista esportiva premium. NÃO é um dashboard com gráficos: priorize foto, tipografia de impacto e narrativa.
+
+VARIAÇÃO POR ATLETA: a estrutura abaixo é um NORTE de qualidade, NÃO um molde para clonar igual em todo atleta. Crie um layout ÚNICO para ESTE atleta — paleta, fontes, composição e arranjo das seções devem refletir a modalidade e o perfil dele (via styleHint). Dois atletas nunca devem gerar páginas idênticas.
 
 A PÁGINA DEVE CONTER, NESTA ORDEM, TODAS as seções abaixo (não pule nenhuma):
 
-1. NAV FIXA no topo: logo/nome curto à esquerda e links âncora (Home, Stats, Media, Career, Contact) que rolam para as seções. Em mobile vira um menu compacto.
+1. NAV minimalista no topo (transparente sobre a foto): nome curto e poucos links âncora (Home, Sobre, Contato).
 
-2. HERO (fundo escuro temático, ocupando a dobra):
-   - <img> do atleta com src="__IMAGE_PLACEHOLDER__" (use EXATAMENTE essa string) posicionada à direita, com recorte elegante e formas geométricas decorativas (hexágonos/losangos) atrás.
-   - Nome do atleta em tipografia GIGANTE (display, caixa alta), com o rótulo "PRO ATHLETE" / status acima ou abaixo.
-   - Botão CTA primário sólido (ex.: "Ver Perfil Completo" ou o CTA sugerido).
-   - Overlay de gradiente para legibilidade.
+2. HERO DE FOTO DOMINANTE (ocupa praticamente toda a primeira tela):
+   - <img> do atleta com src="__IMAGE_PLACEHOLDER__" (use EXATAMENTE essa string) como IMAGEM DE FUNDO dominante do hero, cobrindo a área (object-fit: cover).
+   - Overlay de gradiente escuro de baixo para cima ('linear-gradient(to top, #0a0a0a, transparent)') fundindo a foto com o fundo sólido.
+   - Nome do atleta SOBRE a foto, em tipografia GIGANTE, bold, caixa alta, ocupando 2 linhas. Rótulo "PRO ATHLETE"/status discreto.
+   - Botão CTA sólido na cor de destaque (ex.: "Get in Touch"/"Falar com o atleta") logo abaixo do nome, SOBRE a foto.
 
-3. FAIXA DE STATS logo abaixo do hero: 3 destaques em ÍCONE + NÚMERO GRANDE + RÓTULO, derivados das conquistas reais informadas (ex.: "3x Campeão", "120+ Partidas", "5x Convocações"). Se faltar dado, use rótulos coerentes com a modalidade — NÃO invente recordes específicos verificáveis.
+3. FAIXA DE STATS sobreposta ao final do hero / início do fundo: 3 destaques ÍCONE + NÚMERO GRANDE + RÓTULO em linha (ex.: "3x Campeão", "5x Convocações", "120+ Partidas"). NÃO invente recordes específicos verificáveis.
 
-4. PERFORMANCE ANALYTICS: dois cards lado a lado, cada um com um GRÁFICO desenhado em SVG INLINE (proibido JS e libs externas):
-   - Um gráfico de LINHA (evolução por temporada) e um de BARRAS (ex.: desempenho por período).
-   - Os números são ILUSTRATIVOS — inclua em cada card uma legenda pequena e discreta com o texto "Dados ilustrativos".
+4. SOBRE (ABOUT): título de seção com um ÍCONE circular (ex.: "i" de informação) ao lado, seguido da "Descrição do Atleta" (60-110 palavras), apelo comercial, sem promessas irreais.
 
-5. STAT BREAKDOWN: painel lateral/abaixo com 3 categorias ADAPTADAS À MODALIDADE (ex.: para futebol: Ataque, Defesa, Físico; para luta: Trocação, Solo, Cardio) — cada uma com uma mini-barra de progresso em CSS.
+5. CAREER HIGHLIGHTS: título de seção com um ÍCONE DE ESTRELA à esquerda e uma LINHA DIVISÓRIA fina à direita. Abaixo, uma LISTA VERTICAL editorial de marcos (ANO em destaque + descrição curta), baseada nas conquistas reais. (Editorial/vertical — NÃO use timeline horizontal nem gráficos.)
 
-6. CAREER HIGHLIGHTS: timeline HORIZONTAL com marcadores de ANO e nós circulares estilo "play" (desenhe o ícone de play em SVG/CSS). Baseie os marcos nas conquistas reais.
+6. MOMENTOS / MÍDIA: 1 ou 2 imagens em destaque grandes usando <img src="__IMAGE_PLACEHOLDER__"> (pode repetir; todas recebem a foto) com legenda curta baseada em conquista real.
 
-7. MEDIA GALLERY: grade de 3-4 cards. Cada card de imagem usa <img src="__IMAGE_PLACEHOLDER__"> (pode repetir a string; todas serão preenchidas com a foto do atleta) + legenda curta baseada em conquistas reais.
+7. DEPOIMENTOS: 2 citações editoriais grandes (aspas tipográficas). NÃO invente depoimentos atribuídos a pessoas reais nomeadas — use rótulos genéricos (ex.: "Companheiro de equipe", "Comissão técnica", "Torcida").
 
-8. TESTIMONIALS: 2-3 cards de depoimento com aspas e barra de destaque. IMPORTANTE: NÃO invente depoimentos atribuídos a pessoas reais nomeadas. Use rótulos genéricos (ex.: "Companheiro de equipe", "Comissão técnica", "Torcida") e textos de apoio derivados das conquistas/qualidades reais do atleta.
-
-9. CONTACT: seção final com chamada para ação e botão "Get in Touch"/CTA usando o contato informado (mailto: para e-mail, https://wa.me/ para telefone).
+8. CONTACT: seção final com botão "Get in Touch"/CTA usando o contato informado (mailto: para e-mail, https://wa.me/ para telefone).
 
 REGRAS GERAIS:
-- Paleta e fontes alinhadas à modalidade (via styleHint); contraste mínimo 4.5:1 (WCAG AA).
-- Microinterações suaves: 'transform: scale(1.03)' ou sombra em 'hover' (150-250ms). Respeitar prefers-reduced-motion.
-- Mobile-first, layout que reflui bem em telas pequenas. HTML semântico (<header>,<nav>,<main>,<section>,<footer>), alt tags, ARIA quando fizer sentido.
+- Fundo muito escuro, texto claro, UMA cor de destaque (ouro/bronze ou neon) alinhada à modalidade via styleHint. Contraste WCAG AA.
+- Tipografia condensada/bold de impacto para títulos. Bastante respiro (whitespace). Mobile-first — o layout vertical deve brilhar no celular.
+- Microinterações suaves em hover (150-250ms). Respeitar prefers-reduced-motion. HTML semântico (<header>,<nav>,<main>,<section>,<footer>), alt tags, ARIA quando fizer sentido.
 - Sem frameworks JS/CSS externos. Apenas Google Fonts.
-- Gere também uma "Descrição do Atleta" (60-110 palavras) com apelo comercial, sem promessas irreais.
 
 Saída: SOMENTE o HTML final, sem comentários, sem explicações, sem cercas markdown.`;
 
-const SYSTEM_PREMIUM = `Você é um Diretor de Arte Sênior especializado em design digital para atletas de elite. Gere UM arquivo HTML5 COMPLETO e responsivo (com <!DOCTYPE html>, <html>, <head> e <body>), com TODO o CSS em uma única tag <style> no <head>. A estética deve ser PREMIUM, dark e cinematográfica, no nível de apps esportivos modernos (NFL/NBA) e de um card de jogador de elite.
+const SYSTEM_PREMIUM = `Você é um Diretor de Arte Sênior especializado em design digital para atletas de elite. Gere UM arquivo HTML5 COMPLETO e responsivo (com <!DOCTYPE html>, <html>, <head> e <body>), com TODO o CSS em uma única tag <style> no <head>. Esta é a página MAIS RICA e sofisticada do produto (plano topo de linha): um "media kit" interativo de jogador, no nível de apps esportivos modernos (NFL/NBA). Estrutura de DASHBOARD: hero escuro cinematográfico seguido de um GRANDE PAINEL CLARO de conteúdo que se sobrepõe ao hero (cantos superiores arredondados, como um cartão).
+
+VARIAÇÃO POR ATLETA: a estrutura abaixo é um NORTE de qualidade, NÃO um molde para clonar igual em todo atleta. Crie um layout ÚNICO para ESTE atleta — paleta, fontes, composição e arranjo das seções devem refletir a modalidade e o perfil dele (via styleHint). Dois atletas nunca devem gerar páginas idênticas.
 
 A PÁGINA DEVE CONTER, NESTA ORDEM, TODAS as seções abaixo (não pule nenhuma):
 
-1. NAV FIXA no topo: nome curto à esquerda e links âncora (Home, Stats, Media, Career, Testimonials, Contact).
+1. NAV FIXA no topo, sobre o hero escuro: nome à esquerda e links âncora (Home, Stats, Media, Career, Testimonials, Contact); "Contact" destacado à direita.
 
-2. HERO EM CAMADAS (fundo muito escuro):
-   - <img> do atleta com src="__IMAGE_PLACEHOLDER__" (use EXATAMENTE essa string) como camada de destaque, com overlay de gradiente escuro embaixo ('linear-gradient(to top, #0A0F0B, transparent)') para fusão.
-   - Número/símbolo esportivo GIGANTE e semitransparente atrás do nome.
-   - Nome em tipografia condensada de impacto, caixa alta ("Oswald" ou "Bebas Neue"), com "PRO ATHLETE"/status.
-   - Botão CTA principal sólido SOBRE a imagem (cor de destaque: ouro/bronze ou neon).
+2. HERO (fundo escuro temático):
+   - <img> do atleta com src="__IMAGE_PLACEHOLDER__" (use EXATAMENTE essa string) RECORTADA à DIREITA (não full-bleed), como uma figura sobreposta.
+   - Atrás da foto, GRANDES formas geométricas (hexágonos/losangos com contorno na cor de destaque), semitransparentes.
+   - Nome do atleta GIGANTE à esquerda, caixa alta, com "PRO ATHLETE"/status e um botão CTA "Ver Perfil Completo"/"View Full Profile".
+   - Faixa de STATS (3 KPIs ÍCONE + NÚMERO + RÓTULO) na base do hero.
+   - Um CONTROLE DE CARROSSEL decorativo (pílula com setas ‹ ›, "•••" ou pontos) centralizado na borda inferior do hero, na transição para o painel claro.
 
-3. FAIXA DE STATS (KPIs): 3 destaques ÍCONE + NÚMERO GRANDE + RÓTULO, derivados das conquistas reais (ex.: "3x Campeão", "5x Convocações", "120+ Partidas"). NÃO invente recordes específicos verificáveis.
+3. PAINEL CLARO sobreposto (fundo off-white, cantos superiores arredondados) contendo as seções 4 a 8.
 
-4. PERFORMANCE ANALYTICS: dois cards com GRÁFICOS em SVG INLINE (proibido JS e libs externas): um de LINHA e um de BARRAS. Números ILUSTRATIVOS — inclua em cada card a legenda discreta "Dados ilustrativos".
+4. PERFORMANCE ANALYTICS: dois cards lado a lado com GRÁFICOS em SVG INLINE (proibido JS e libs externas) — um de LINHA e um de BARRAS — MAIS um card lateral "STAT BREAKDOWN" com 3 categorias adaptadas à modalidade, cada linha com rótulo + chevron (›). Números ILUSTRATIVOS — legenda discreta "Dados ilustrativos".
 
-5. STAT BREAKDOWN: painel com 3 categorias ADAPTADAS À MODALIDADE, cada uma com mini-barra de progresso em CSS.
+5. CAREER HIGHLIGHTS: timeline HORIZONTAL com marcadores de ANO e nós circulares estilo "play" (SVG/CSS). SOBRE esta seção, sobreponha um CARD DE VÍDEO FLUTUANTE (thumbnail usando <img src="__IMAGE_PLACEHOLDER__">, botão de play, título curto ex.: "2020 · Seleção", e um "x" de fechar no canto) — elemento visual exclusivo deste plano.
 
-6. CAREER HIGHLIGHTS: timeline horizontal com marcadores de ANO e nós circulares estilo "play" (SVG/CSS), baseada nas conquistas reais.
+6. SEÇÃO DE VÍDEO: se um embed do YouTube for fornecido, inclua um <iframe> responsivo (width 100%, height ~450px, border-radius 12px). Se não houver, omita.
 
-7. SEÇÃO DE VÍDEO: se um embed do YouTube for fornecido, inclua um <iframe> responsivo (width 100%, height ~450px, border-radius 12px). Se não houver, omita esta seção.
+7. MEDIA GALLERY: grade de 4 COLUNAS. Cada card = <img src="__IMAGE_PLACEHOLDER__"> (pode repetir; todas recebem a foto) + um pequeno AVATAR circular + legenda curta (uma frase de apoio com rótulo genérico). NÃO invente nomes reais.
 
-8. MEDIA GALLERY: grade de 3-4 cards de imagem usando <img src="__IMAGE_PLACEHOLDER__"> (pode repetir; todas serão preenchidas com a foto) + legendas curtas baseadas em conquistas reais.
+8. TESTIMONIALS: 2-3 cards com aspas e barra de destaque. NÃO invente depoimentos atribuídos a pessoas reais nomeadas — use rótulos genéricos ("Companheiro de equipe", "Comissão técnica", "Torcida").
 
-9. TESTIMONIALS: 2-3 cards. NÃO invente depoimentos atribuídos a pessoas reais nomeadas — use rótulos genéricos (ex.: "Companheiro de equipe", "Comissão técnica", "Torcida") e texto derivado das qualidades/conquistas reais.
-
-10. CONTACT: seção final com botão "Get in Touch"/CTA usando o contato informado (mailto: para e-mail, https://wa.me/ para telefone).
+9. CONTACT: seção final com um botão grande "Get in Touch"/CTA usando o contato informado (mailto: para e-mail, https://wa.me/ para telefone) e um detalhe decorativo (brilho/estrela).
 
 REGRAS GERAIS:
-- Paleta sofisticada: fundo muito escuro, texto branco, UMA cor de destaque consistente. Alinhar à modalidade via styleHint. Contraste WCAG AA.
-- Microinterações suaves em hover (150-250ms). Respeitar prefers-reduced-motion. Mobile-first.
+- Hero escuro + painel claro: dois "mundos" com UMA cor de destaque consistente (alinhada à modalidade via styleHint). Contraste WCAG AA.
+- Microinterações suaves em hover (150-250ms). Respeitar prefers-reduced-motion. Mobile-first (galeria reflui para 2/1 colunas).
 - HTML semântico (<header>,<nav>,<main>,<section>,<footer>), ARIA roles, alt tags. Sem frameworks JS/CSS externos (apenas Google Fonts).
 - Inclua uma "Descrição do Atleta" (60-110 palavras) com apelo comercial, sem promessas irreais.
 

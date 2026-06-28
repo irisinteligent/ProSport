@@ -17,23 +17,32 @@ export const BasicSportpageInputSchema = z.object({
 
 export type BasicSportpageInput = z.infer<typeof BasicSportpageInputSchema>;
 
-const SYSTEM_BASIC = `Você é um designer web focado em criar propostas de patrocínio claras e profissionais. Gere um arquivo HTML5 completo, responsivo, com CSS embutido. A estética deve ser limpa, estruturada em blocos e inspirada em um folheto digital moderno.
+const SYSTEM_BASIC = `Você é um designer sênior. Gere UM arquivo HTML5 COMPLETO e responsivo (com <!DOCTYPE html>, <html>, <head> e <body>), com TODO o CSS em uma única tag <style> no <head>. O formato é uma PROPOSTA DE PATROCÍNIO limpa e profissional (one-pager/flyer), pensada para mobile.
 
-Regras obrigatórias (BASIC):
-- Layout em Blocos de Cores:
-  - Bloco Superior: Crie uma seção superior com cor de fundo sólida (verde escuro profissional, ex: #1E4025). Esta seção deve conter o título "PROPOSTA DE PATROCÍNIO" no topo, seguido pela imagem principal do atleta preenchendo a largura do bloco com bordas superiores arredondadas.
-  - Divisor de Seção: Use uma forma de onda ou curva suave (SVG embutido ou CSS clip-path) para transição elegante entre o bloco superior e a seção de conteúdo abaixo.
-  - Bloco de Conteúdo Principal: Fundo de cor clara e neutra (off-white/bege, ex: #F8F7F4).
-- Estrutura do Conteúdo:
-  - Logo abaixo do divisor, título de seção centralizado (ex: "Visão Geral do Atleta") seguido por parágrafo introdutório.
-  - Grade de três colunas (desktop) / uma coluna (mobile) com cards informativos.
-  - Design dos Cards: fundo de cor sutil, bordas arredondadas, contendo: ÍCONE, TÍTULO em negrito, e texto descritivo.
-- Botão de CTA: No final, botão centralizado com cor principal sólida e texto claro.
-- Tipografia: Fontes sans-serif limpas — "Poppins" para títulos, "Lato" para corpo (Google Fonts).
-- Paleta: verde escuro principal, fundo off-white/bege, texto escuro (#333).
-- Código leve, mobile-first. Alt tags. HTML semântico. CSS em única tag <style> no <head>.
+IMPORTANTE — VARIAÇÃO POR ATLETA: a estrutura abaixo é um NORTE de qualidade, NÃO um molde para clonar igual em todo atleta. Crie um layout ÚNICO para ESTE atleta — paleta, fontes e arranjo devem refletir a MODALIDADE e o perfil dele (via styleHint). Dois atletas nunca devem gerar páginas idênticas.
 
-Saída: SOMENTE o HTML final, sem explicações.`;
+A PÁGINA DEVE CONTER, NESTA ORDEM:
+
+1. CABEÇALHO em barra com a cor de destaque da modalidade e o título "PROPOSTA DE PATROCÍNIO" em caixa alta, centralizado.
+
+2. FOTO/HERO: use EXATAMENTE o bloco de IMAGEM fornecido no prompt, grande, com cantos arredondados, logo abaixo do cabeçalho (se for o fallback sem foto, trate como bloco visual temático).
+
+3. "VISÃO GERAL DO ATLETA": título de seção + a "Descrição do Atleta" (60-110 palavras), apelo comercial, sem promessas irreais.
+
+4. TRÊS CARDS (1 coluna no mobile, 3 no desktop), cada um com ÍCONE + TÍTULO + texto curto:
+   - "Conquistas" — derivado das conquistas reais informadas.
+   - "Público" — alcance/engajamento, SEM inventar números específicos.
+   - "Oportunidades" — o que uma marca ganha apoiando o atleta.
+
+5. CTA final centralizado: use EXATAMENTE o bloco de CTA fornecido (ex.: "Fale Conosco").
+
+REGRAS GERAIS:
+- Fundo claro e limpo, UMA cor de destaque alinhada à modalidade (via styleHint). Contraste WCAG AA.
+- Tipografia profissional (Google Fonts). Microinterações suaves em hover (150-250ms). Respeitar prefers-reduced-motion.
+- MOBILE-FIRST (a maioria abre no celular). HTML semântico (<header>,<main>,<section>,<footer>), alt tags.
+- Sem frameworks JS/CSS externos. Apenas Google Fonts. NÃO invente recordes verificáveis nem depoimentos atribuídos a pessoas reais nomeadas.
+
+Saída: SOMENTE o HTML final, sem comentários, sem explicações, sem cercas markdown.`;
 
 const generateBasicSportpageFlow = ai.defineFlow(
   {

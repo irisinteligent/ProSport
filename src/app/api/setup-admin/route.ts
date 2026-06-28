@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { adminDb } from '@/lib/firebase-admin';
-import admin from 'firebase-admin';
+import { adminAuth, adminDb } from '@/lib/firebase-admin';
 
 // Rota temporária de uso único — DELETAR APÓS USAR
 const SECRET = 'prosport-admin-setup-2026';
@@ -13,7 +12,7 @@ export async function GET(req: NextRequest) {
 
   try {
     // Busca o UID pelo email
-    const userRecord = await admin.auth().getUserByEmail('irismarketingdigital@gmail.com');
+    const userRecord = await adminAuth.getUserByEmail('irismarketingdigital@gmail.com');
     const uid = userRecord.uid;
 
     // Cria ou atualiza o documento no Firestore
