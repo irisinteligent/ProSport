@@ -5,6 +5,8 @@ import type { GenerateSponsorPresentationInput } from "@/ai/flows/types";
 import { setPageContent } from "@/lib/storage";
 import { uploadAthletePhoto } from "@/lib/upload-photo";
 import { composeAthleteHero } from "@/lib/compose-hero";
+import { getSession } from "@/lib/auth";
+import { hasReachedSportpageLimit, recordSportpageGenerated, SPORTPAGE_LIMIT } from "@/lib/sportpage-quota";
 import { testAiConnection } from "@/ai/flows/test-ai-connection";
 import { generateEnhancedSportpage } from '@/ai/flows/generate-enhanced-sportpage';
 import { generateBasicSportpage } from '@/ai/flows/generate-basic-sportpage';
@@ -25,6 +27,14 @@ interface CreateBasicSportpageData extends GenerateSponsorPresentationInput {
 
 export async function createBasicPresentation(data: CreateBasicSportpageData) {
   try {
+    const session = await getSession();
+    if (!session || session.role !== "athlete") {
+      return { error: "Sessão inválida. Faça login como atleta para gerar sua Sport Page." };
+    }
+    if (await hasReachedSportpageLimit(session.uid)) {
+      return { error: `Você atingiu o limite de ${SPORTPAGE_LIMIT} Sport Pages no seu plano.` };
+    }
+
     const slug = generateSlug(data.fullName) + `-basic-${Date.now()}`;
 
     let photoUrl: string | undefined;
@@ -57,6 +67,7 @@ export async function createBasicPresentation(data: CreateBasicSportpageData) {
     }
 
     await setPageContent(slug, html);
+    await recordSportpageGenerated(session.uid, slug);
     return { presentation: html, presentationUrl: `/p/${slug}` };
   } catch (error: any) {
     console.error("createBasicPresentation error:", error);
@@ -72,6 +83,14 @@ interface CreateEnhancedSportpageData extends GenerateEnhancedSportpageInput {
 
 export async function createEnhancedSportpage(data: CreateEnhancedSportpageData) {
   try {
+    const session = await getSession();
+    if (!session || session.role !== "athlete") {
+      return { error: "Sessão inválida. Faça login como atleta para gerar sua Sport Page." };
+    }
+    if (await hasReachedSportpageLimit(session.uid)) {
+      return { error: `Você atingiu o limite de ${SPORTPAGE_LIMIT} Sport Pages no seu plano.` };
+    }
+
     const { photoDataUri, ...athleteData } = data;
     const slug = generateSlug(data.fullName) + `-plus-${Date.now()}`;
 
@@ -92,6 +111,7 @@ export async function createEnhancedSportpage(data: CreateEnhancedSportpageData)
 
     const finalHtml = sportpageHtml.split('__IMAGE_PLACEHOLDER__').join(heroUrl);
     await setPageContent(slug, finalHtml);
+    await recordSportpageGenerated(session.uid, slug);
     return { sportpageHtml: finalHtml, sportpageUrl: `/p/${slug}` };
   } catch (error: any) {
     console.error("createEnhancedSportpage error:", error);
