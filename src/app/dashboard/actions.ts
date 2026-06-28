@@ -4,6 +4,7 @@ import { generateSponsorPresentation } from "@/ai/flows/generate-sponsor-present
 import type { GenerateSponsorPresentationInput } from "@/ai/flows/types";
 import { setPageContent } from "@/lib/storage";
 import { uploadAthletePhoto } from "@/lib/upload-photo";
+import { composeAthleteHero } from "@/lib/compose-hero";
 import { testAiConnection } from "@/ai/flows/test-ai-connection";
 import { generateEnhancedSportpage } from '@/ai/flows/generate-enhanced-sportpage';
 import { generateBasicSportpage } from '@/ai/flows/generate-basic-sportpage';
@@ -75,6 +76,10 @@ export async function createEnhancedSportpage(data: CreateEnhancedSportpageData)
     const slug = generateSlug(data.fullName) + `-plus-${Date.now()}`;
 
     const photoUrl = await uploadAthletePhoto(slug, photoDataUri);
+    // Composição automática do hero: troca o fundo pelo cenário da modalidade e
+    // reilumina o atleta (FLUX Kontext via fal). Sem FAL_KEY ou em falha, devolve
+    // a própria photoUrl — nunca bloqueia a geração. Ver src/lib/compose-hero.ts.
+    const heroUrl = await composeAthleteHero(slug, photoUrl, data.sport);
     const sportpageHtml = await generateEnhancedSportpage(athleteData);
     if (
       !sportpageHtml ||
@@ -85,7 +90,7 @@ export async function createEnhancedSportpage(data: CreateEnhancedSportpageData)
       throw new Error(`AI retornou HTML incompleto (${sportpageHtml?.length ?? 0} chars). Tente novamente.`);
     }
 
-    const finalHtml = sportpageHtml.split('__IMAGE_PLACEHOLDER__').join(photoUrl);
+    const finalHtml = sportpageHtml.split('__IMAGE_PLACEHOLDER__').join(heroUrl);
     await setPageContent(slug, finalHtml);
     return { sportpageHtml: finalHtml, sportpageUrl: `/p/${slug}` };
   } catch (error: any) {
