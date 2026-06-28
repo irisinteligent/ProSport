@@ -25,13 +25,10 @@ A PÁGINA DEVE CONTER, NESTA ORDEM, TODAS as seções abaixo (não pule nenhuma)
 
 1. NAV minimalista no topo (transparente sobre a foto): nome curto e poucos links âncora (Home, Sobre, Contato).
 
-2. HERO DE FOTO DOMINANTE (ocupa praticamente toda a primeira tela):
-   - <img> do atleta com src="__IMAGE_PLACEHOLDER__" (use EXATAMENTE essa string) como IMAGEM DE FUNDO dominante do hero, cobrindo a área (object-fit: cover).
-   - Overlay de gradiente escuro de baixo para cima ('linear-gradient(to top, #0a0a0a, transparent)') fundindo a foto com o fundo sólido.
-   - Nome do atleta SOBRE a foto, em tipografia GIGANTE, bold, caixa alta, ocupando 2 linhas. Rótulo "PRO ATHLETE"/status discreto.
-   - Botão CTA sólido na cor de destaque (ex.: "Get in Touch"/"Falar com o atleta") logo abaixo do nome, SOBRE a foto.
-
-3. FAIXA DE STATS sobreposta ao final do hero / início do fundo: 3 destaques ÍCONE + NÚMERO GRANDE + RÓTULO em linha (ex.: "3x Campeão", "5x Convocações", "120+ Partidas"). NÃO invente recordes específicos verificáveis.
+2. HERO FULL-SCREEN (FULL-BLEED, ocupando 100% da viewport: 100vw de largura e 100vh de altura):
+   - A <img src="__IMAGE_PLACEHOLDER__"> (use EXATAMENTE essa string) PREENCHE A TELA INTEIRA — position:absolute; inset:0; width:100%; height:100%; object-fit:cover. A composição atleta+fundo é o protagonista. NUNCA coloque a imagem dentro de uma caixa, coluna ou card.
+   - Overlay de gradiente escuro (de baixo para cima e/ou nas bordas) APENAS para legibilidade do texto.
+   - TODA a tipografia fica SOBRE a imagem (sobreposta, z-index acima da foto): nome do atleta GIGANTE em caixa alta (até 2 linhas), rótulo "PRO ATHLETE"/status, botão CTA sólido na cor de destaque, e a FAIXA DE STATS (3 destaques ÍCONE + NÚMERO GRANDE + RÓTULO, ex.: "3x Campeão", "120+ Partidas") posicionada na BASE da tela, também SOBRE a imagem. NÃO invente recordes específicos verificáveis.
 
 4. SOBRE (ABOUT): título de seção com um ÍCONE circular (ex.: "i" de informação) ao lado, seguido da "Descrição do Atleta" (60-110 palavras), apelo comercial, sem promessas irreais.
 
@@ -59,12 +56,11 @@ A PÁGINA DEVE CONTER, NESTA ORDEM, TODAS as seções abaixo (não pule nenhuma)
 
 1. NAV FIXA no topo, sobre o hero escuro: nome à esquerda e links âncora (Home, Stats, Media, Career, Testimonials, Contact); "Contact" destacado à direita.
 
-2. HERO (fundo escuro temático):
-   - <img> do atleta com src="__IMAGE_PLACEHOLDER__" (use EXATAMENTE essa string) RECORTADA à DIREITA (não full-bleed), como uma figura sobreposta.
-   - Atrás da foto, GRANDES formas geométricas (hexágonos/losangos com contorno na cor de destaque), semitransparentes.
-   - Nome do atleta GIGANTE à esquerda, caixa alta, com "PRO ATHLETE"/status e um botão CTA "Ver Perfil Completo"/"View Full Profile".
-   - Faixa de STATS (3 KPIs ÍCONE + NÚMERO + RÓTULO) na base do hero.
-   - Um CONTROLE DE CARROSSEL decorativo (pílula com setas ‹ ›, "•••" ou pontos) centralizado na borda inferior do hero, na transição para o painel claro.
+2. HERO FULL-SCREEN (FULL-BLEED, ocupando 100% da viewport: 100vw x 100vh):
+   - A <img src="__IMAGE_PLACEHOLDER__"> (use EXATAMENTE essa string) PREENCHE A TELA INTEIRA — position:absolute; inset:0; width:100%; height:100%; object-fit:cover. A composição atleta+fundo é o protagonista. NUNCA recorte a imagem numa caixa/coluna lateral.
+   - Overlay de gradiente escuro (de baixo para cima e/ou nas bordas) APENAS para legibilidade.
+   - TODA a tipografia fica SOBRE a imagem (sobreposta, z-index acima da foto): nome do atleta GIGANTE em caixa alta, rótulo "PRO ATHLETE"/status, botão CTA "Ver Perfil Completo"/"View Full Profile", e a faixa de STATS (3 KPIs ÍCONE + NÚMERO + RÓTULO) na BASE da tela, também SOBRE a imagem.
+   - Opcional: um CONTROLE DE CARROSSEL decorativo (pílula com setas ‹ › e pontos) centralizado na borda inferior, na transição para o painel claro.
 
 3. PAINEL CLARO sobreposto (fundo off-white, cantos superiores arredondados) contendo as seções 4 a 8.
 
