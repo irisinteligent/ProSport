@@ -41,6 +41,7 @@ REGRAS GERAIS:
 - Tipografia profissional (Google Fonts). Microinterações suaves em hover (150-250ms). Respeitar prefers-reduced-motion.
 - MOBILE-FIRST (a maioria abre no celular). HTML semântico (<header>,<main>,<section>,<footer>), alt tags.
 - Sem frameworks JS/CSS externos. Apenas Google Fonts. NÃO invente recordes verificáveis nem depoimentos atribuídos a pessoas reais nomeadas.
+- ÍCONES: use SEMPRE ícones desenhados em SVG inline. NUNCA use emojis em lugar nenhum (nem em stats, cards, botões ou títulos). Emoji é proibido.
 
 Saída: SOMENTE o HTML final, sem comentários, sem explicações, sem cercas markdown.`;
 

@@ -26,8 +26,8 @@ A PÁGINA DEVE CONTER, NESTA ORDEM, TODAS as seções abaixo (não pule nenhuma)
 1. NAV minimalista no topo (transparente sobre a foto): nome curto e poucos links âncora (Home, Sobre, Contato).
 
 2. HERO FULL-SCREEN (FULL-BLEED, ocupando 100% da viewport: 100vw de largura e 100vh de altura):
-   - A <img src="__IMAGE_PLACEHOLDER__"> (use EXATAMENTE essa string) PREENCHE A TELA INTEIRA — position:absolute; inset:0; width:100%; height:100%; object-fit:cover. A composição atleta+fundo é o protagonista. NUNCA coloque a imagem dentro de uma caixa, coluna ou card.
-   - Overlay de gradiente escuro (de baixo para cima e/ou nas bordas) APENAS para legibilidade do texto.
+   - A <img src="__IMAGE_PLACEHOLDER__"> (use EXATAMENTE essa string) PREENCHE A TELA INTEIRA — position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position: center top. MANTENHA SEMPRE o ROSTO e a CABEÇA do atleta visíveis — NUNCA corte a cabeça. A composição atleta+fundo é o protagonista. NUNCA coloque a imagem dentro de uma caixa, coluna ou card.
+   - Overlay de gradiente escuro FORTE (de baixo para cima e nas bordas) para legibilidade. A tipografia sobre a foto deve ser CLARA (branca/creme) e de ALTO CONTRASTE — NUNCA cor escura sobre imagem escura.
    - TODA a tipografia fica SOBRE a imagem (sobreposta, z-index acima da foto): nome do atleta GIGANTE em caixa alta (até 2 linhas), rótulo "PRO ATHLETE"/status, botão CTA sólido na cor de destaque, e a FAIXA DE STATS (3 destaques ÍCONE + NÚMERO GRANDE + RÓTULO, ex.: "3x Campeão", "120+ Partidas") posicionada na BASE da tela, também SOBRE a imagem. NÃO invente recordes específicos verificáveis.
 
 4. SOBRE (ABOUT): título de seção com um ÍCONE circular (ex.: "i" de informação) ao lado, seguido da "Descrição do Atleta" (60-110 palavras), apelo comercial, sem promessas irreais.
@@ -45,6 +45,7 @@ REGRAS GERAIS:
 - Tipografia condensada/bold de impacto para títulos. Bastante respiro (whitespace). Mobile-first — o layout vertical deve brilhar no celular.
 - Microinterações suaves em hover (150-250ms). Respeitar prefers-reduced-motion. HTML semântico (<header>,<nav>,<main>,<section>,<footer>), alt tags, ARIA quando fizer sentido.
 - Sem frameworks JS/CSS externos. Apenas Google Fonts.
+- ÍCONES: use SEMPRE ícones desenhados em SVG inline (troféu, medalha, bola, etc.). NUNCA use emojis em lugar nenhum — nem em stats, nem em botões, nem em títulos. Emoji é proibido.
 
 Saída: SOMENTE o HTML final, sem comentários, sem explicações, sem cercas markdown.`;
 
@@ -57,8 +58,8 @@ A PÁGINA DEVE CONTER, NESTA ORDEM, TODAS as seções abaixo (não pule nenhuma)
 1. NAV FIXA no topo, sobre o hero escuro: nome à esquerda e links âncora (Home, Stats, Media, Career, Testimonials, Contact); "Contact" destacado à direita.
 
 2. HERO FULL-SCREEN (FULL-BLEED, ocupando 100% da viewport: 100vw x 100vh):
-   - A <img src="__IMAGE_PLACEHOLDER__"> (use EXATAMENTE essa string) PREENCHE A TELA INTEIRA — position:absolute; inset:0; width:100%; height:100%; object-fit:cover. A composição atleta+fundo é o protagonista. NUNCA recorte a imagem numa caixa/coluna lateral.
-   - Overlay de gradiente escuro (de baixo para cima e/ou nas bordas) APENAS para legibilidade.
+   - A <img src="__IMAGE_PLACEHOLDER__"> (use EXATAMENTE essa string) PREENCHE A TELA INTEIRA — position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position: center top. MANTENHA SEMPRE o ROSTO e a CABEÇA do atleta visíveis — NUNCA corte a cabeça. A composição atleta+fundo é o protagonista. NUNCA recorte a imagem numa caixa/coluna lateral.
+   - Overlay de gradiente escuro FORTE (de baixo para cima e nas bordas) para legibilidade. A tipografia sobre a foto deve ser CLARA (branca/creme) e de ALTO CONTRASTE — NUNCA cor escura sobre imagem escura.
    - TODA a tipografia fica SOBRE a imagem (sobreposta, z-index acima da foto): nome do atleta GIGANTE em caixa alta, rótulo "PRO ATHLETE"/status, botão CTA "Ver Perfil Completo"/"View Full Profile", e a faixa de STATS (3 KPIs ÍCONE + NÚMERO + RÓTULO) na BASE da tela, também SOBRE a imagem.
    - Opcional: um CONTROLE DE CARROSSEL decorativo (pílula com setas ‹ › e pontos) centralizado na borda inferior, na transição para o painel claro.
 
@@ -80,6 +81,7 @@ REGRAS GERAIS:
 - Hero escuro + painel claro: dois "mundos" com UMA cor de destaque consistente (alinhada à modalidade via styleHint). Contraste WCAG AA.
 - Microinterações suaves em hover (150-250ms). Respeitar prefers-reduced-motion. Mobile-first (galeria reflui para 2/1 colunas).
 - HTML semântico (<header>,<nav>,<main>,<section>,<footer>), ARIA roles, alt tags. Sem frameworks JS/CSS externos (apenas Google Fonts).
+- ÍCONES: use SEMPRE ícones desenhados em SVG inline (troféu, medalha, bola, etc.). NUNCA use emojis em lugar nenhum — nem em stats, nem em botões, nem em títulos. Emoji é proibido.
 - Inclua uma "Descrição do Atleta" (60-110 palavras) com apelo comercial, sem promessas irreais.
 
 Saída: SOMENTE o HTML final, sem comentários, sem explicações, sem cercas markdown.`;
