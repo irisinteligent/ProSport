@@ -6,6 +6,7 @@ import { setPageContent } from "@/lib/storage";
 import { uploadAthletePhoto } from "@/lib/upload-photo";
 import { composeAthleteHero } from "@/lib/compose-hero";
 import { getSession } from "@/lib/auth";
+import { hasActiveSubscription } from "@/lib/subscription";
 import { hasReachedSportpageLimit, recordSportpageGenerated, SPORTPAGE_LIMIT } from "@/lib/sportpage-quota";
 import { testAiConnection } from "@/ai/flows/test-ai-connection";
 import { generateEnhancedSportpage } from '@/ai/flows/generate-enhanced-sportpage';
@@ -30,6 +31,9 @@ export async function createBasicPresentation(data: CreateBasicSportpageData) {
     const session = await getSession();
     if (!session || session.role !== "athlete") {
       return { error: "Sessão inválida. Faça login como atleta para gerar sua Sport Page." };
+    }
+    if (!hasActiveSubscription(session)) {
+      return { error: "Assinatura necessária. Escolha um plano para gerar sua Sport Page." };
     }
     if (await hasReachedSportpageLimit(session.uid)) {
       return { error: `Você atingiu o limite de ${SPORTPAGE_LIMIT} Sport Pages no seu plano.` };
@@ -86,6 +90,9 @@ export async function createEnhancedSportpage(data: CreateEnhancedSportpageData)
     const session = await getSession();
     if (!session || session.role !== "athlete") {
       return { error: "Sessão inválida. Faça login como atleta para gerar sua Sport Page." };
+    }
+    if (!hasActiveSubscription(session)) {
+      return { error: "Assinatura necessária. Escolha um plano para gerar sua Sport Page." };
     }
     if (await hasReachedSportpageLimit(session.uid)) {
       return { error: `Você atingiu o limite de ${SPORTPAGE_LIMIT} Sport Pages no seu plano.` };
