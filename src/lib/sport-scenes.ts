@@ -76,6 +76,7 @@ export function buildKontextPrompt(sport: string): string {
     `Replace the plain studio background with ${getScenePrompt(sport)}. ` +
     'Keep the athlete exactly the same — preserve the face, body, uniform and pose — ' +
     'and relight them to match the new scene with realistic shadows and rim light. ' +
+    'Frame the FULL athlete in a vertical 4:5 portrait, with the head and face FULLY visible and NEVER cropped. ' +
     'Photorealistic, cinematic, professional sports photography.'
   );
 }

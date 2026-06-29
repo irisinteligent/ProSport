@@ -73,7 +73,7 @@ async function runEditModel(key: string, photoUrl: string, sport: string): Promi
         output_format: 'jpeg',
         safety_tolerance: '2',
       }
-    : { prompt, image_urls: [photoUrl] };
+    : { prompt, image_urls: [photoUrl], aspect_ratio: '4:5' };
 
   const res = await fetch(`https://fal.run/${model}`, {
     method: 'POST',

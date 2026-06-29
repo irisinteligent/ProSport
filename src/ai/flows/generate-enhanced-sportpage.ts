@@ -25,10 +25,10 @@ A PÁGINA DEVE CONTER, NESTA ORDEM, TODAS as seções abaixo (não pule nenhuma)
 
 1. NAV minimalista no topo (transparente sobre a foto): nome curto e poucos links âncora (Home, Sobre, Contato).
 
-2. HERO FULL-SCREEN (FULL-BLEED, ocupando 100% da viewport: 100vw de largura e 100vh de altura):
-   - A <img src="__IMAGE_PLACEHOLDER__"> (use EXATAMENTE essa string) PREENCHE A TELA INTEIRA — position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position: center top. MANTENHA SEMPRE o ROSTO e a CABEÇA do atleta visíveis — NUNCA corte a cabeça. A composição atleta+fundo é o protagonista. NUNCA coloque a imagem dentro de uma caixa, coluna ou card.
-   - Overlay de gradiente escuro FORTE (de baixo para cima e nas bordas) para legibilidade. A tipografia sobre a foto deve ser CLARA (branca/creme) e de ALTO CONTRASTE — NUNCA cor escura sobre imagem escura.
-   - TODA a tipografia fica SOBRE a imagem (sobreposta, z-index acima da foto): nome do atleta GIGANTE em caixa alta (até 2 linhas), rótulo "PRO ATHLETE"/status, botão CTA sólido na cor de destaque, e a FAIXA DE STATS (3 destaques ÍCONE + NÚMERO GRANDE + RÓTULO, ex.: "3x Campeão", "120+ Partidas") posicionada na BASE da tela, também SOBRE a imagem. NÃO invente recordes específicos verificáveis.
+2. HERO em DUAS COLUNAS (split), altura cheia (min-height: 100vh): IMAGEM do atleta à DIREITA, TIPOGRAFIA à ESQUERDA. A tipografia NUNCA fica sobre o rosto/corpo do atleta — colocar texto sobre o rosto é proibido.
+   - COLUNA DIREITA: a <img src="__IMAGE_PLACEHOLDER__"> (use EXATAMENTE essa string) é a composição atleta+fundo em RETRATO (proporção 4:5), mostrando o ATLETA INTEIRO com a CABEÇA e o ROSTO totalmente visíveis (NUNCA cortados). Ocupa toda a metade direita do hero.
+   - COLUNA ESQUERDA (sobre fundo escuro temático, FORA da foto): nome do atleta GIGANTE em caixa alta em texto CLARO/branco, rótulo "PRO ATHLETE"/status, botão CTA sólido na cor de destaque, e a FAIXA DE STATS (3 destaques ÍCONE SVG + NÚMERO GRANDE + RÓTULO, ex.: "3x Campeão", "120+ Partidas") abaixo. NÃO invente recordes específicos verificáveis.
+   - No MOBILE empilha: imagem em cima (retrato), tipografia logo abaixo — tipografia NUNCA sobre o rosto.
 
 4. SOBRE (ABOUT): título de seção com um ÍCONE circular (ex.: "i" de informação) ao lado, seguido da "Descrição do Atleta" (60-110 palavras), apelo comercial, sem promessas irreais.
 
@@ -57,11 +57,11 @@ A PÁGINA DEVE CONTER, NESTA ORDEM, TODAS as seções abaixo (não pule nenhuma)
 
 1. NAV FIXA no topo, sobre o hero escuro: nome à esquerda e links âncora (Home, Stats, Media, Career, Testimonials, Contact); "Contact" destacado à direita.
 
-2. HERO FULL-SCREEN (FULL-BLEED, ocupando 100% da viewport: 100vw x 100vh):
-   - A <img src="__IMAGE_PLACEHOLDER__"> (use EXATAMENTE essa string) PREENCHE A TELA INTEIRA — position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position: center top. MANTENHA SEMPRE o ROSTO e a CABEÇA do atleta visíveis — NUNCA corte a cabeça. A composição atleta+fundo é o protagonista. NUNCA recorte a imagem numa caixa/coluna lateral.
-   - Overlay de gradiente escuro FORTE (de baixo para cima e nas bordas) para legibilidade. A tipografia sobre a foto deve ser CLARA (branca/creme) e de ALTO CONTRASTE — NUNCA cor escura sobre imagem escura.
-   - TODA a tipografia fica SOBRE a imagem (sobreposta, z-index acima da foto): nome do atleta GIGANTE em caixa alta, rótulo "PRO ATHLETE"/status, botão CTA "Ver Perfil Completo"/"View Full Profile", e a faixa de STATS (3 KPIs ÍCONE + NÚMERO + RÓTULO) na BASE da tela, também SOBRE a imagem.
-   - Opcional: um CONTROLE DE CARROSSEL decorativo (pílula com setas ‹ › e pontos) centralizado na borda inferior, na transição para o painel claro.
+2. HERO em DUAS COLUNAS (split), altura cheia (min-height: 100vh): IMAGEM do atleta à DIREITA, TIPOGRAFIA à ESQUERDA. A tipografia NUNCA fica sobre o rosto/corpo do atleta — colocar texto sobre o rosto é proibido (amadorismo).
+   - COLUNA DIREITA: a <img src="__IMAGE_PLACEHOLDER__"> (use EXATAMENTE essa string) é a composição atleta+fundo em RETRATO (proporção 4:5, ~1080x1350), mostrando o ATLETA INTEIRO com a CABEÇA e o ROSTO totalmente visíveis (NUNCA cortados). Ocupa toda a metade direita do hero, altura cheia.
+   - COLUNA ESQUERDA (sobre fundo escuro temático, FORA da foto): nome do atleta GIGANTE em caixa alta em texto CLARO/branco, rótulo "PRO ATHLETE"/status, botão CTA "Ver Perfil Completo"/"View Full Profile", e a faixa de STATS (3 KPIs ÍCONE SVG + NÚMERO + RÓTULO) abaixo do nome.
+   - Atrás da tipografia, formas geométricas decorativas semitransparentes na cor de destaque.
+   - No MOBILE empilha: imagem em cima (retrato), tipografia logo abaixo — tipografia NUNCA sobre o rosto.
 
 3. PAINEL CLARO sobreposto (fundo off-white, cantos superiores arredondados) contendo as seções 4 a 8.
 
