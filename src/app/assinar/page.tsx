@@ -24,25 +24,46 @@ type PlanCard = {
 };
 
 /* ----------------------- Mini-mockups dos modelos ----------------------- */
+/* Cada preview é uma miniatura realista de uma sportpage gerada — foto real do
+   atleta + tipografia + stats — para o atleta enxergar exatamente o que recebe. */
+
+const PHOTO_BASIC =
+  "https://images.unsplash.com/photo-1763844072520-e480cb2cec8c?w=600&h=360&fit=crop&q=75";
+const PHOTO_PLUS =
+  "https://images.unsplash.com/photo-1606335544053-c43609e6155d?w=500&h=700&fit=crop&q=75";
+const PHOTO_PREMIUM =
+  "https://images.unsplash.com/photo-1710736460914-4a7f22d736c4?w=500&h=700&fit=crop&q=75";
+
+function Stat({ value, label, tone }: { value: string; label: string; tone: string }) {
+  return (
+    <div className="text-center">
+      <div className={`font-headline text-sm font-extrabold leading-none ${tone}`}>{value}</div>
+      <div className="mt-0.5 text-[6px] font-semibold uppercase tracking-widest text-current opacity-60">
+        {label}
+      </div>
+    </div>
+  );
+}
 
 function PreviewBasic() {
   return (
-    <div className="aspect-[4/3] w-full overflow-hidden rounded-xl bg-white shadow-inner ring-1 ring-black/5">
-      <div className="bg-emerald-700 py-1.5 text-center text-[7px] font-bold uppercase tracking-widest text-white">
+    <div className="overflow-hidden rounded-xl bg-white shadow-lg ring-1 ring-black/5">
+      <div className="bg-emerald-700 py-1.5 text-center text-[8px] font-bold uppercase tracking-[0.25em] text-white">
         Proposta de Patrocínio
       </div>
-      <div className="p-2.5">
-        <div className="mb-2 h-10 w-full rounded-md bg-gradient-to-br from-emerald-200 to-emerald-400" />
-        <div className="mb-1 h-1.5 w-3/4 rounded bg-slate-300" />
-        <div className="mb-2 h-1.5 w-1/2 rounded bg-slate-200" />
-        <div className="grid grid-cols-3 gap-1">
-          {[0, 1, 2].map((i) => (
-            <div key={i} className="rounded bg-slate-100 p-1">
-              <div className="mx-auto mb-0.5 h-2 w-2 rounded-full bg-emerald-500" />
-              <div className="h-1 w-full rounded bg-slate-200" />
-            </div>
-          ))}
+      <div className="relative h-28 bg-emerald-900">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={PHOTO_BASIC} alt="" className="h-full w-full object-cover object-top" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
+        <div className="absolute bottom-1.5 left-2.5">
+          <div className="font-headline text-base font-extrabold leading-none text-white">CARLOS SANTOS</div>
+          <div className="mt-0.5 text-[8px] font-bold tracking-[0.2em] text-emerald-300">FUTEBOL · PROFISSIONAL</div>
         </div>
+      </div>
+      <div className="grid grid-cols-3 gap-1 px-2.5 py-2 text-emerald-700">
+        <Stat value="87" label="Gols" tone="text-emerald-700" />
+        <Stat value="142" label="Jogos" tone="text-emerald-700" />
+        <Stat value="06" label="Títulos" tone="text-emerald-700" />
       </div>
     </div>
   );
@@ -50,20 +71,24 @@ function PreviewBasic() {
 
 function PreviewPlus() {
   return (
-    <div className="aspect-[4/3] w-full overflow-hidden rounded-xl bg-white shadow-inner ring-1 ring-black/5">
-      <div className="grid h-full grid-cols-2">
-        <div className="flex flex-col justify-center gap-1.5 bg-slate-50 p-2.5">
-          <div className="h-1 w-10 rounded bg-sky-500" />
-          <div className="h-2.5 w-full rounded bg-slate-800" />
-          <div className="h-2.5 w-3/4 rounded bg-slate-800" />
-          <div className="mt-1 flex gap-1">
-            {[0, 1, 2].map((i) => (
-              <div key={i} className="h-3 w-5 rounded bg-sky-100" />
-            ))}
-          </div>
-          <div className="mt-1 h-2 w-12 rounded-full bg-sky-500" />
+    <div className="grid h-36 grid-cols-5 overflow-hidden rounded-xl bg-white shadow-lg ring-1 ring-black/5">
+      <div className="col-span-3 flex flex-col justify-center gap-1.5 p-3">
+        <div className="h-0.5 w-6 bg-sky-500" />
+        <div className="font-headline text-xl font-extrabold uppercase leading-[0.95] text-slate-900">
+          Rafael<br />Lima
         </div>
-        <div className="bg-gradient-to-br from-sky-300 via-sky-400 to-indigo-500" />
+        <div className="text-[8px] font-bold tracking-[0.18em] text-sky-600">JIU-JITSU · FAIXA PRETA</div>
+        <div className="mt-1 flex gap-2 text-slate-800">
+          <Stat value="38" label="Vitórias" tone="text-sky-600" />
+          <Stat value="24" label="Finaliz." tone="text-sky-600" />
+        </div>
+        <div className="mt-1 w-max rounded-full bg-sky-500 px-2.5 py-1 text-[7px] font-bold uppercase tracking-wider text-white">
+          Ver Perfil
+        </div>
+      </div>
+      <div className="relative col-span-2 bg-slate-800">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={PHOTO_PLUS} alt="" className="absolute inset-0 h-full w-full object-cover" />
       </div>
     </div>
   );
@@ -71,22 +96,26 @@ function PreviewPlus() {
 
 function PreviewPremium() {
   return (
-    <div className="aspect-[4/3] w-full overflow-hidden rounded-xl bg-slate-950 shadow-inner ring-1 ring-amber-400/20">
-      <div className="grid h-full grid-cols-2">
-        <div className="flex flex-col justify-center gap-1.5 p-2.5">
-          <div className="h-1 w-8 rounded bg-amber-400" />
-          <div className="h-3 w-full rounded bg-white/90" />
-          <div className="h-3 w-2/3 rounded bg-white/90" />
-          <div className="mt-1 flex gap-1">
-            {[0, 1, 2].map((i) => (
-              <div key={i} className="h-3 w-5 rounded border border-amber-400/40 bg-white/5" />
-            ))}
-          </div>
-          <div className="mt-1 h-2 w-12 rounded-full bg-amber-400" />
+    <div className="grid h-36 grid-cols-5 overflow-hidden rounded-xl bg-slate-950 shadow-lg ring-1 ring-amber-400/20">
+      <div className="col-span-3 flex flex-col justify-center gap-1 p-3">
+        <div className="text-[7px] font-bold tracking-[0.25em] text-amber-400">PRO ATHLETE</div>
+        <div className="font-headline text-xl font-extrabold uppercase leading-[0.95] text-white">
+          Bruno<br />Alves
         </div>
-        <div className="relative bg-gradient-to-br from-slate-700 via-slate-800 to-black">
-          <div className="absolute inset-0 bg-gradient-to-t from-amber-500/20 to-transparent" />
+        <div className="text-[8px] font-bold tracking-[0.18em] text-amber-300/80">ATLETISMO · 100M</div>
+        <div className="mt-1 flex gap-2 text-white">
+          <Stat value="10.2s" label="100m" tone="text-amber-400" />
+          <Stat value="12" label="Medalhas" tone="text-amber-400" />
         </div>
+        <div className="mt-1.5 flex w-max items-center gap-1 rounded-full border border-amber-400/40 px-2 py-0.5 text-[7px] font-bold text-amber-200">
+          <span className="text-[8px]">▶</span> VÍDEO
+        </div>
+      </div>
+      <div className="relative col-span-2 bg-slate-900">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={PHOTO_PREMIUM} alt="" className="absolute inset-0 h-full w-full object-cover" />
+        <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/20 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-amber-500/15 to-transparent" />
       </div>
     </div>
   );
