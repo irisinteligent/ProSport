@@ -1,7 +1,8 @@
 
 import { Header } from "@/components/header";
 import { Button } from "@/components/ui/button";
-import { requireSession } from "@/lib/auth";
+import { redirect } from "next/navigation";
+import { requireSession, isEmailVerified } from "@/lib/auth";
 import { redirectToBillingPortal } from "@/lib/billing-actions";
 import { AthleteSearchSection } from "@/components/company/athlete-search-section";
 
@@ -11,6 +12,9 @@ export default async function CompanyDashboardPage({
   searchParams: Promise<{ q?: string }>;
 }) {
   const session = await requireSession(["company"], "/company/login");
+  if (!(await isEmailVerified(session.uid))) {
+    redirect("/verificar-email");
+  }
   const { q } = await searchParams;
 
   return (

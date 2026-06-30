@@ -55,6 +55,21 @@ export async function getSession(): Promise<SessionUser | null> {
 }
 
 /**
+ * Verifica, em tempo real, se o e-mail do usuário já foi confirmado.
+ * Lê direto do Firebase Auth (e não do cookie de sessão, que pode estar
+ * desatualizado pois foi emitido no cadastro, antes da verificação).
+ * Contas via Google já vêm com e-mail verificado.
+ */
+export async function isEmailVerified(uid: string): Promise<boolean> {
+  try {
+    const user = await adminAuth.getUser(uid);
+    return user.emailVerified === true;
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Para usar no topo de Server Components protegidos. Redireciona se não
  * houver sessão válida, ou se o role do usuário não estiver em `allowedRoles`.
  */

@@ -18,7 +18,7 @@ import {
 
 import { Header } from "@/components/header";
 import { ModelBasic, ModelPlus, ModelPremium } from "@/components/assinar/model-mockups";
-import { requireSession } from "@/lib/auth";
+import { requireSession, isEmailVerified } from "@/lib/auth";
 import { hasActiveSubscription } from "@/lib/subscription";
 
 export const dynamic = "force-dynamic";
@@ -287,6 +287,11 @@ const FAQ = [
 
 export default async function AssinarPage() {
   const session = await requireSession(["athlete"], "/athlete/login");
+
+  // Confirme o e-mail antes de escolher plano/pagar.
+  if (!(await isEmailVerified(session.uid))) {
+    redirect("/verificar-email");
+  }
 
   // Já é assinante ativo? Não faz sentido ver o paywall — vai pro portal.
   if (hasActiveSubscription(session)) {

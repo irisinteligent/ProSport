@@ -69,10 +69,10 @@ export function SignupForm() {
     }
 
     toast({
-      title: "Conta Criada",
-      description: "Bem-vindo! Redirecionando para o seu painel...",
+      title: "Conta criada",
+      description: "Enviamos um link de confirmação para o seu e-mail.",
     });
-    router.push("/dashboard");
+    router.push("/verificar-email");
   }
 
   return (

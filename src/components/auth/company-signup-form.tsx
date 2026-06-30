@@ -74,10 +74,10 @@ export function CompanySignupForm() {
     }
 
     toast({
-      title: "Conta Criada",
-      description: "Bem-vindo! Redirecionando para a escolha de planos...",
+      title: "Conta criada",
+      description: "Enviamos um link de confirmação para o seu e-mail.",
     });
-    router.push("/company/plans");
+    router.push("/verificar-email");
   }
 
   return (

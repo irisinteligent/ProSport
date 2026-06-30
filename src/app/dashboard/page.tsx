@@ -1,11 +1,16 @@
 import { redirect } from "next/navigation";
 import { Header } from "@/components/header";
 import { AthleteDashboardClient } from "@/components/dashboard/athlete-dashboard-client";
-import { requireSession } from "@/lib/auth";
+import { requireSession, isEmailVerified } from "@/lib/auth";
 import { hasActiveSubscription } from "@/lib/subscription";
 
 export default async function DashboardPage() {
   const session = await requireSession(["athlete"], "/athlete/login");
+
+  // Gate de verificação de e-mail: só e-mails confirmados acessam o portal.
+  if (!(await isEmailVerified(session.uid))) {
+    redirect("/verificar-email");
+  }
 
   // Gate de pagamento: sem assinatura ativa confirmada, o atleta vê a tela de
   // apresentação (/assinar) e não entra no portal. Ver src/lib/subscription.ts.
