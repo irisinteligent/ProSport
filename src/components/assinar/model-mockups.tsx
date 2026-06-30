@@ -7,10 +7,10 @@ import { Trophy, Award, Play, Star, Info, HeartHandshake, BarChart3, ChevronRigh
    ========================================================================= */
 
 const HERO_KIT = "https://images.unsplash.com/photo-1608245449230-4ac19066d2d0?w=640&h=900&fit=crop&q=85";
-const SOCCER = "https://images.unsplash.com/photo-1517466787929-bc90951d0974?w=640&h=520&fit=crop&q=80";
+const BJJ = "https://images.unsplash.com/photo-1564415315949-7a0c4c73aab4?w=640&h=520&fit=crop&q=80";
 const SOCCER_RUN = "https://images.unsplash.com/photo-1551280857-2b9bbe52acf4?w=400&h=300&fit=crop&q=75";
 const SOCCER_JUMP = "https://images.unsplash.com/photo-1504305754058-2f08ccd89a0a?w=400&h=300&fit=crop&q=75";
-const CINEMA = "https://images.unsplash.com/photo-1607080033776-63b372e37828?w=720&h=1100&fit=crop&q=85";
+const CINEMA = "https://images.unsplash.com/photo-1779142167168-458a646f596e?w=720&h=1100&fit=crop&q=85";
 
 function BrowserBar() {
   return (
@@ -191,12 +191,12 @@ export function ModelBasic() {
       <div className="p-3">
         <div className="overflow-hidden rounded-xl">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={SOCCER} alt="" className="h-32 w-full object-cover" />
+          <img src={BJJ} alt="" className="h-32 w-full object-cover" />
         </div>
         <div className="mt-3 text-center font-headline text-base font-extrabold text-emerald-800">Visão do Atleta</div>
         <p className="mt-1 text-center text-[7px] leading-relaxed text-slate-500">
-          Atacante experiente, preciso e confiante em campo. Agilidade e leitura tática que comandam o
-          ataque e criam conexões com a torcida.
+          Faixa-preta técnico e estratégico no tatame. Domínio de guarda, passagens e finalizações
+          que decidem as lutas e impõem respeito na categoria.
         </p>
         <div className="mt-3 grid grid-cols-3 gap-1.5">
           {[
@@ -229,7 +229,7 @@ export function ModelPremium() {
     <div className="relative mx-auto w-full max-w-[260px] overflow-hidden rounded-[1.5rem] border-4 border-slate-800 bg-slate-950 shadow-2xl">
       <div className="relative h-[340px]">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={CINEMA} alt="" className="absolute inset-0 h-full w-full object-cover object-top" />
+        <img src={CINEMA} alt="" className="absolute inset-0 h-full w-full object-cover object-[50%_18%]" />
         <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/25 to-slate-950" />
         <div className="pointer-events-none absolute -left-6 top-10 h-32 w-32 rounded-full bg-amber-500/20 blur-2xl" />
         <div className="relative flex h-full flex-col p-3">
@@ -258,8 +258,8 @@ export function ModelPremium() {
           <span className="font-headline text-[10px] font-extrabold uppercase tracking-wide text-white">Sobre</span>
         </div>
         <p className="mt-1.5 text-[7px] leading-relaxed text-slate-400">
-          Atleta dinâmico e fisicamente imponente, conhecido pela performance excepcional. Força,
-          velocidade e dedicação que renderam múltiplos títulos e o respeito de companheiros e torcida.
+          Atacante decisivo e veloz, conhecido pelos gols em momentos importantes. Faro de gol,
+          técnica e dedicação que renderam títulos e o respeito de companheiros e torcida.
         </p>
         <div className="mt-2.5 flex items-center gap-1.5 border-t border-white/10 pt-2">
           <Star className="h-3 w-3 text-amber-400" />

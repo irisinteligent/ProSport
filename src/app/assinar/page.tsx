@@ -465,9 +465,23 @@ export default async function AssinarPage() {
                   </span>
                   <h3 className="mt-3 font-headline text-2xl font-extrabold text-white">Design editorial de revista esportiva</h3>
                   <p className="mt-2 text-slate-400">
-                    Hero de impacto com a sua foto tratada, faixa de estatísticas, gráficos de
-                    performance e destaques de carreira — o nível que patrocinadores reconhecem.
+                    Uma página de impacto, no nível que patrocinadores e clubes reconhecem.
                   </p>
+                  <ul className="mt-4 space-y-2">
+                    {[
+                      "Hero full-bleed com a sua foto tratada e composta no cenário da modalidade",
+                      "Nome em destaque, selo PRO ATHLETE e botão de contato",
+                      "Faixa de estatísticas com ícones (títulos, jogos, convocações)",
+                      "Seção de performance com gráficos de pontos, rebotes e mais",
+                      "Linha do tempo com os destaques da carreira",
+                      "Divulgação ativa da ProSport para empresas e clubes parceiros",
+                    ].map((f) => (
+                      <li key={f} className="flex items-start gap-2 text-sm text-slate-300">
+                        <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-sky-400" />
+                        <span>{f}</span>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
               </div>
 
@@ -480,8 +494,22 @@ export default async function AssinarPage() {
                   </span>
                   <h3 className="mt-3 font-headline text-xl font-extrabold text-white">Proposta de patrocínio pronta</h3>
                   <p className="mx-auto mt-2 max-w-xs text-sm text-slate-400">
-                    Um one-pager limpo e profissional para o atleta enviar a marcas e clubes.
+                    Um one-pager limpo e profissional para você mesmo enviar a marcas e clubes.
                   </p>
+                  <ul className="mx-auto mt-4 max-w-xs space-y-2 text-left">
+                    {[
+                      "Sportpage profissional com a sua foto",
+                      "Cabeçalho de Proposta de Patrocínio",
+                      "Seção Visão do Atleta com a sua trajetória",
+                      "Cards de Conquistas, Público e Oportunidades",
+                      "Botão de contato e link único compartilhável",
+                    ].map((f) => (
+                      <li key={f} className="flex items-start gap-2 text-sm text-slate-300">
+                        <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-emerald-400" />
+                        <span>{f}</span>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
                 <div className="text-center">
                   <ModelPremium />
@@ -490,8 +518,23 @@ export default async function AssinarPage() {
                   </span>
                   <h3 className="mt-3 font-headline text-xl font-extrabold text-white">Flagship cinematográfico com vídeo</h3>
                   <p className="mx-auto mt-2 max-w-xs text-sm text-slate-400">
-                    Página imersiva full-screen, com vídeo e divulgação para a grande mídia.
+                    Tudo do Plus, em uma página imersiva full-screen de altíssimo nível.
                   </p>
+                  <ul className="mx-auto mt-4 max-w-xs space-y-2 text-left">
+                    {[
+                      "Hero full-screen cinematográfico com a sua foto",
+                      "Vídeo do YouTube embutido na página",
+                      "Galeria de mídia e destaques em vídeo",
+                      "Seção Sobre com a sua biografia",
+                      "Divulgação para TV, jornais e revistas",
+                      "Suporte prioritário",
+                    ].map((f) => (
+                      <li key={f} className="flex items-start gap-2 text-sm text-slate-300">
+                        <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-amber-400" />
+                        <span>{f}</span>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
               </div>
             </div>
