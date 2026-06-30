@@ -85,7 +85,7 @@ export function ModelPlus() {
           {/* foto full-bleed à direita */}
           <div className="absolute inset-y-0 right-0 w-[58%]">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={HERO_KIT} alt="" className="h-full w-full object-cover object-top" />
+            <img src={HERO_KIT} alt="" className="h-full w-full object-cover object-[50%_18%]" />
             <div className="absolute inset-0 bg-gradient-to-r from-[#0c241a] via-[#0c241a]/40 to-transparent" />
             <div className="absolute inset-0 bg-gradient-to-t from-[#0c241a] via-transparent to-transparent" />
           </div>
