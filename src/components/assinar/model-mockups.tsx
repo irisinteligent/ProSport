@@ -6,7 +6,7 @@ import { Trophy, Award, Play, Star, Info, HeartHandshake, BarChart3, ChevronRigh
    de página que a ProSport entrega. Fotos: Unsplash (uso livre, ilustrativas).
    ========================================================================= */
 
-const HERO_KIT = "https://images.unsplash.com/photo-1764842262144-e58d386299ac?w=640&h=900&fit=crop&q=85";
+const HERO_KIT = "https://images.unsplash.com/photo-1608245449230-4ac19066d2d0?w=640&h=900&fit=crop&q=85";
 const SOCCER = "https://images.unsplash.com/photo-1517466787929-bc90951d0974?w=640&h=520&fit=crop&q=80";
 const SOCCER_RUN = "https://images.unsplash.com/photo-1551280857-2b9bbe52acf4?w=400&h=300&fit=crop&q=75";
 const SOCCER_JUMP = "https://images.unsplash.com/photo-1504305754058-2f08ccd89a0a?w=400&h=300&fit=crop&q=75";
@@ -81,13 +81,13 @@ export function ModelPlus() {
       <BrowserBar />
       <div className="bg-white">
         {/* HERO */}
-        <div className="relative h-52 overflow-hidden bg-gradient-to-br from-[#0b1f16] via-[#0c241a] to-black">
+        <div className="relative h-52 overflow-hidden bg-gradient-to-br from-[#2a1206] via-[#3a1a08] to-black">
           {/* foto full-bleed à direita */}
           <div className="absolute inset-y-0 right-0 w-[58%]">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={HERO_KIT} alt="" className="h-full w-full object-cover object-[50%_18%]" />
-            <div className="absolute inset-0 bg-gradient-to-r from-[#0c241a] via-[#0c241a]/40 to-transparent" />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#0c241a] via-transparent to-transparent" />
+            <img src={HERO_KIT} alt="" className="h-full w-full object-cover object-[50%_30%]" />
+            <div className="absolute inset-0 bg-gradient-to-r from-[#2a1206] via-[#2a1206]/40 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#2a1206] via-transparent to-transparent" />
           </div>
           {/* glow dourado de estádio */}
           <div className="pointer-events-none absolute -right-6 top-2 h-40 w-40 rounded-full bg-amber-500/25 blur-2xl" />
@@ -104,17 +104,17 @@ export function ModelPlus() {
               <span className="ml-auto">Contato</span>
             </nav>
             <div className="mt-auto pb-6">
-              <div className="font-headline text-3xl font-extrabold uppercase leading-[0.82] text-[#f3efe0]">
+              <div className="font-headline text-3xl font-extrabold uppercase leading-[0.82] text-[#fff5e8]">
                 Rafael<br />Lima
               </div>
-              <div className="mt-1.5 text-[9px] font-bold tracking-[0.3em] text-white/70">PRO ATHLETE</div>
+              <div className="mt-1.5 text-[9px] font-bold tracking-[0.3em] text-orange-200/80">PRO ATHLETE · BASQUETE</div>
               <div className="mt-2.5 inline-flex items-center gap-1 rounded-md bg-gradient-to-r from-amber-400 to-amber-600 px-3 py-1.5 text-[8px] font-bold text-slate-900">
                 Ver Perfil Completo <ArrowRight className="h-2.5 w-2.5" />
               </div>
               <div className="mt-3.5 flex gap-4">
                 <IconStat icon={Trophy} value="3×" label="Campeão" />
-                <IconStat icon={Award} value="5×" label="Convocações" />
-                <IconStat icon={Star} value="120+" label="Partidas" />
+                <IconStat icon={Award} value="5×" label="All-Star" />
+                <IconStat icon={Star} value="120+" label="Jogos" />
               </div>
             </div>
           </div>
@@ -132,24 +132,24 @@ export function ModelPlus() {
           <div className="text-[9px] font-extrabold uppercase tracking-wide text-slate-800">Performance Analytics</div>
           <div className="mt-2 grid grid-cols-3 gap-2">
             <div className="rounded-lg bg-white p-2 shadow-sm">
-              <div className="text-[6px] font-semibold text-slate-400">Jardas por Temporada</div>
+              <div className="text-[6px] font-semibold text-slate-400">Pontos por Jogo</div>
               <div className="mt-1 h-9">
-                <LineChart stroke="#15803d" />
+                <LineChart stroke="#ea580c" />
               </div>
             </div>
             <div className="rounded-lg bg-white p-2 shadow-sm">
-              <div className="text-[6px] font-semibold text-slate-400">Desarmes por Jogo</div>
+              <div className="text-[6px] font-semibold text-slate-400">Rebotes por Jogo</div>
               <div className="mt-1 h-9">
-                <BarChart fill="#15803d" />
+                <BarChart fill="#ea580c" />
               </div>
             </div>
             <div className="rounded-lg bg-white p-2 shadow-sm">
               <div className="text-[6px] font-semibold text-slate-400">Stat Breakdown</div>
               <div className="mt-1.5 space-y-1">
-                {["Ataque", "Defesa", "Equipes"].map((s) => (
+                {["Ataque", "Defesa", "Arremessos"].map((s) => (
                   <div key={s} className="flex items-center justify-between rounded bg-slate-50 px-1.5 py-1">
                     <div className="flex items-center gap-1">
-                      <span className="h-1.5 w-1.5 rounded-sm bg-green-600" />
+                      <span className="h-1.5 w-1.5 rounded-sm bg-orange-500" />
                       <span className="text-[6px] font-medium text-slate-600">{s}</span>
                     </div>
                     <ChevronRight className="h-2 w-2 text-slate-300" />
@@ -164,8 +164,8 @@ export function ModelPlus() {
           <div className="mt-2 flex items-center justify-between rounded-lg bg-white p-2 shadow-sm">
             {["2018", "2019", "2020", "2021", "2022", "2023"].map((y, i) => (
               <div key={y} className="flex flex-col items-center gap-1">
-                <span className={`flex h-5 w-5 items-center justify-center rounded-full border ${i === 2 ? "border-green-600" : "border-slate-200"}`}>
-                  <Play className={`h-2.5 w-2.5 ${i === 2 ? "text-green-600" : "text-slate-300"}`} />
+                <span className={`flex h-5 w-5 items-center justify-center rounded-full border ${i === 2 ? "border-orange-500" : "border-slate-200"}`}>
+                  <Play className={`h-2.5 w-2.5 ${i === 2 ? "text-orange-500" : "text-slate-300"}`} />
                 </span>
                 <span className="text-[5px] font-semibold text-slate-400">{y}</span>
               </div>
