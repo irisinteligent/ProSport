@@ -133,7 +133,7 @@ function PreviewPremium() {
 const BENEFITS = [
   {
     icon: Wand2,
-    title: "Foto tratada por IA",
+    title: "Foto tratada pela ProSport",
     text: "Sua foto é recortada e composta em um cenário da sua modalidade, com iluminação profissional — sem precisar de fotógrafo.",
     color: "text-emerald-400",
   },
@@ -164,7 +164,7 @@ const BENEFITS = [
   {
     icon: Trophy,
     title: "Para qualquer esporte",
-    text: "Futebol, jiu-jitsu, natação, atletismo, MMA, vôlei... a IA entende a sua modalidade e o seu nível.",
+    text: "Futebol, jiu-jitsu, natação, atletismo, MMA, vôlei... a ProSport entende a sua modalidade e o seu nível.",
     color: "text-emerald-400",
   },
 ];
@@ -183,7 +183,7 @@ const STEPS = [
   {
     n: "03",
     title: "Receba sua SportPage",
-    text: "A IA monta a página e te entrega o link pronto para divulgar a quem investe em esporte.",
+    text: "A ProSport monta a página e te entrega o link pronto para divulgar a quem investe em esporte.",
   },
 ];
 
@@ -228,7 +228,7 @@ const PLANS: PlanCard[] = [
     tagline: "Design de revista esportiva + divulgação ativa.",
     features: [
       "Tudo do Básico",
-      "Design editorial e foto tratada por IA",
+      "Design editorial e foto tratada pela ProSport",
       "Composição automática atleta + cenário",
       "Envio para empresas e clubes parceiros",
     ],
@@ -262,7 +262,7 @@ const PLANS: PlanCard[] = [
 const FAQ = [
   {
     q: "Preciso saber mexer em design ou edição?",
-    a: "Não. Você só envia sua foto e alguns dados — a inteligência artificial cuida do recorte da foto, da composição e de todo o layout.",
+    a: "Não. Você só envia sua foto e alguns dados — a ProSport cuida do recorte da foto, da composição e de todo o layout.",
   },
   {
     q: "Funciona para a minha modalidade?",
@@ -330,7 +330,7 @@ export default async function AssinarPage() {
                 </span>
               </h1>
               <p className="mt-5 max-w-lg text-base text-slate-300 md:text-lg">
-                Nossa IA monta uma página esportiva profissional com a sua foto tratada e o seu
+                A ProSport monta uma página esportiva profissional com a sua foto tratada e o seu
                 histórico — o material que patrocinadores, clubes e imprensa esperam ver. Pronta em
                 minutos, sem designer.
               </p>
@@ -388,7 +388,7 @@ export default async function AssinarPage() {
                 ["Minutos", "para ficar pronta"],
                 ["Qualquer", "modalidade"],
                 ["Link único", "para compartilhar"],
-                ["IA", "especializada em atletas"],
+                ["ProSport", "especialista em atletas"],
               ].map(([big, small]) => (
                 <div key={small}>
                   <div className="font-headline text-2xl font-extrabold text-white md:text-3xl">{big}</div>
@@ -417,9 +417,9 @@ export default async function AssinarPage() {
                 O que é uma SportPage
               </span>
               <p className="mt-4 text-lg leading-relaxed text-slate-200 md:text-xl">
-                É a sua página esportiva profissional, com link único. Reúne a sua foto tratada por
-                IA, a sua trajetória, as suas conquistas e os seus números num design de nível de
-                liga grande — feito para impressionar quem investe em esporte.
+                É a sua página esportiva profissional, com link único. Reúne a sua foto tratada
+                pela ProSport, a sua trajetória, as suas conquistas e os seus números num design de
+                nível de liga grande — feito para impressionar quem investe em esporte.
               </p>
             </div>
           </section>
