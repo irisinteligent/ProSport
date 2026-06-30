@@ -16,20 +16,36 @@ type ActionResult<T = object> =
 
 function mapAuthError(err: unknown): string {
   const message = err instanceof Error ? err.message : String(err);
+  // O Firebase Admin guarda o tipo do erro em `err.code` (ex.: "auth/email-already-exists"),
+  // e a frase legível em `err.message` ("The email address is already in use..."). Antes só
+  // olhávamos a message — por isso erros conhecidos caíam no genérico. Agora combinamos os dois.
+  const code = typeof (err as { code?: unknown })?.code === "string" ? (err as { code: string }).code : "";
+  const hay = `${code} ${message}`;
 
-  if (message.includes("auth/email-already-exists") || message.includes("EMAIL_EXISTS")) {
+  if (
+    hay.includes("auth/email-already-exists") ||
+    hay.includes("EMAIL_EXISTS") ||
+    hay.includes("email-already-in-use") ||
+    hay.includes("already in use")
+  ) {
     return "Este e-mail já está cadastrado.";
   }
-  if (message.includes("auth/invalid-password") || message.includes("WEAK_PASSWORD")) {
+  if (
+    hay.includes("auth/invalid-password") ||
+    hay.includes("WEAK_PASSWORD") ||
+    hay.includes("at least 6 characters")
+  ) {
     return "A senha precisa ter pelo menos 6 caracteres.";
   }
-  if (message.includes("auth/invalid-email")) {
+  if (hay.includes("auth/invalid-email") || hay.includes("INVALID_EMAIL")) {
     return "Endereço de e-mail inválido.";
   }
   if (
-    message.includes("INVALID_LOGIN_CREDENTIALS") ||
-    message.includes("EMAIL_NOT_FOUND") ||
-    message.includes("INVALID_PASSWORD")
+    hay.includes("INVALID_LOGIN_CREDENTIALS") ||
+    hay.includes("EMAIL_NOT_FOUND") ||
+    hay.includes("INVALID_PASSWORD") ||
+    hay.includes("auth/wrong-password") ||
+    hay.includes("auth/user-not-found")
   ) {
     return "E-mail ou senha inválidos.";
   }
