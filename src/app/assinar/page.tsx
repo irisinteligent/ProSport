@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 
 import { Header } from "@/components/header";
+import { ModelBasic, ModelPlus, ModelPremium } from "@/components/assinar/model-mockups";
 import { requireSession } from "@/lib/auth";
 import { hasActiveSubscription } from "@/lib/subscription";
 
@@ -475,17 +476,45 @@ export default async function AssinarPage() {
               Cada plano entrega um estilo de página. Veja como a sua pode ficar — a sua será única,
               com a sua foto e a sua história.
             </p>
-            <div className="mt-12 grid gap-8 md:grid-cols-3">
-              {PLANS.map((plan) => (
-                <div key={plan.id} className="rounded-3xl border border-white/10 bg-white/[0.04] p-5">
-                  {plan.preview}
-                  <div className="mt-4 flex items-center gap-2">
-                    <plan.icon className={`h-5 w-5 ${plan.accent}`} />
-                    <h3 className="font-headline text-lg font-bold text-white">Modelo {plan.name}</h3>
-                  </div>
-                  <p className="mt-1 text-sm text-slate-400">{plan.tagline}</p>
+            <div className="mt-14 space-y-16">
+              {/* Plus em destaque (desktop) */}
+              <div className="grid items-center gap-8 lg:grid-cols-2">
+                <ModelPlus />
+                <div>
+                  <span className="inline-flex items-center gap-2 rounded-full bg-sky-500/10 px-3 py-1 text-xs font-bold uppercase tracking-widest text-sky-400">
+                    <Zap className="h-3.5 w-3.5" /> Modelo Plus
+                  </span>
+                  <h3 className="mt-3 font-headline text-2xl font-extrabold text-white">Design editorial de revista esportiva</h3>
+                  <p className="mt-2 text-slate-400">
+                    Hero de impacto com a sua foto tratada, faixa de estatísticas, gráficos de
+                    performance e destaques de carreira — o nível que patrocinadores reconhecem.
+                  </p>
                 </div>
-              ))}
+              </div>
+
+              {/* Básico + Premium (mobile) */}
+              <div className="grid gap-12 md:grid-cols-2">
+                <div className="text-center">
+                  <ModelBasic />
+                  <span className="mt-6 inline-flex items-center gap-2 rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-bold uppercase tracking-widest text-emerald-400">
+                    <Star className="h-3.5 w-3.5" /> Modelo Básico
+                  </span>
+                  <h3 className="mt-3 font-headline text-xl font-extrabold text-white">Proposta de patrocínio pronta</h3>
+                  <p className="mx-auto mt-2 max-w-xs text-sm text-slate-400">
+                    Um one-pager limpo e profissional para o atleta enviar a marcas e clubes.
+                  </p>
+                </div>
+                <div className="text-center">
+                  <ModelPremium />
+                  <span className="mt-6 inline-flex items-center gap-2 rounded-full bg-amber-500/10 px-3 py-1 text-xs font-bold uppercase tracking-widest text-amber-400">
+                    <Crown className="h-3.5 w-3.5" /> Modelo Premium
+                  </span>
+                  <h3 className="mt-3 font-headline text-xl font-extrabold text-white">Flagship cinematográfico com vídeo</h3>
+                  <p className="mx-auto mt-2 max-w-xs text-sm text-slate-400">
+                    Página imersiva full-screen, com vídeo e divulgação para a grande mídia.
+                  </p>
+                </div>
+              </div>
             </div>
           </section>
 
