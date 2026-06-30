@@ -27,8 +27,6 @@ export const dynamic = "force-dynamic";
 /*  Fotos (Unsplash — uso livre, ilustram os modelos)                       */
 /* ======================================================================== */
 
-const PHOTO_HERO =
-  "https://images.unsplash.com/photo-1606335544053-c43609e6155d?w=720&h=900&fit=crop&q=80";
 const PHOTO_BASIC =
   "https://images.unsplash.com/photo-1763844072520-e480cb2cec8c?w=600&h=360&fit=crop&q=75";
 const PHOTO_PLUS =
@@ -355,29 +353,10 @@ export default async function AssinarPage() {
             </div>
 
             {/* visual hero: sportpage flagship */}
-            <div className="relative mx-auto w-full max-w-sm">
-              <div className="absolute -inset-4 rounded-[2rem] bg-gradient-to-tr from-emerald-500/30 via-sky-500/20 to-amber-500/30 blur-2xl" />
-              <div className="relative grid grid-cols-5 overflow-hidden rounded-3xl border border-white/10 bg-slate-950 shadow-2xl">
-                <div className="col-span-3 flex flex-col justify-center gap-2 p-6">
-                  <div className="text-[10px] font-bold tracking-[0.3em] text-amber-400">PRO ATHLETE</div>
-                  <div className="font-headline text-4xl font-extrabold uppercase leading-[0.9]">
-                    Rafael<br />Lima
-                  </div>
-                  <div className="text-[11px] font-bold tracking-[0.2em] text-sky-300">JIU-JITSU · FAIXA PRETA</div>
-                  <div className="mt-2 flex gap-4">
-                    <Stat value="38" label="Vitórias" tone="text-emerald-400" />
-                    <Stat value="24" label="Finaliz." tone="text-emerald-400" />
-                    <Stat value="08" label="Títulos" tone="text-emerald-400" />
-                  </div>
-                  <div className="mt-3 w-max rounded-full bg-gradient-to-r from-emerald-400 to-sky-500 px-4 py-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-950">
-                    Ver Perfil
-                  </div>
-                </div>
-                <div className="relative col-span-2 bg-slate-900">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={PHOTO_HERO} alt="" className="absolute inset-0 h-full w-full object-cover" />
-                  <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-transparent to-transparent" />
-                </div>
+            <div className="relative mx-auto w-full max-w-md lg:max-w-lg">
+              <div className="absolute -inset-6 rounded-[2.5rem] bg-gradient-to-tr from-emerald-500/30 via-sky-500/20 to-amber-500/30 blur-3xl" />
+              <div className="relative">
+                <ModelPlus />
               </div>
             </div>
           </section>

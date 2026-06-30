@@ -1,17 +1,16 @@
-import { Trophy, Award, Play, Star, Info, HeartHandshake, BarChart3, ChevronRight } from "lucide-react";
+import { Trophy, Award, Play, Star, Info, HeartHandshake, BarChart3, ChevronRight, ArrowRight } from "lucide-react";
 
 /* =========================================================================
-   Mockups realistas das SportPages — usados na seção "Modelos" da /assinar.
-   São réplicas em miniatura (HTML/CSS, sem JS) dos três estilos de página
-   que a ProSport entrega, para o atleta enxergar o nível do que recebe.
-   Fotos: Unsplash (uso livre), apenas ilustrativas.
+   Mockups realistas das SportPages — usados no hero e na seção "Modelos"
+   da /assinar. São réplicas em miniatura (HTML/CSS, sem JS) dos três estilos
+   de página que a ProSport entrega. Fotos: Unsplash (uso livre, ilustrativas).
    ========================================================================= */
 
+const HERO_KIT = "https://images.unsplash.com/photo-1764842262144-e58d386299ac?w=640&h=900&fit=crop&q=85";
 const SOCCER = "https://images.unsplash.com/photo-1517466787929-bc90951d0974?w=640&h=520&fit=crop&q=80";
 const SOCCER_RUN = "https://images.unsplash.com/photo-1551280857-2b9bbe52acf4?w=400&h=300&fit=crop&q=75";
 const SOCCER_JUMP = "https://images.unsplash.com/photo-1504305754058-2f08ccd89a0a?w=400&h=300&fit=crop&q=75";
-const FLAGSHIP = "https://images.unsplash.com/photo-1606335544053-c43609e6155d?w=600&h=820&fit=crop&q=85";
-const CINEMA = "https://images.unsplash.com/photo-1710736460914-4a7f22d736c4?w=720&h=1040&fit=crop&q=85";
+const CINEMA = "https://images.unsplash.com/photo-1607080033776-63b372e37828?w=720&h=1100&fit=crop&q=85";
 
 function BrowserBar() {
   return (
@@ -20,14 +19,6 @@ function BrowserBar() {
       <span className="h-2 w-2 rounded-full bg-amber-400/80" />
       <span className="h-2 w-2 rounded-full bg-green-400/80" />
       <div className="ml-3 h-3 w-32 rounded bg-slate-700" />
-    </div>
-  );
-}
-
-function PhoneNotch() {
-  return (
-    <div className="flex justify-center py-1.5">
-      <div className="h-1 w-12 rounded-full bg-white/30" />
     </div>
   );
 }
@@ -66,18 +57,16 @@ function IconStat({
   icon: Icon,
   value,
   label,
-  tone,
 }: {
   icon: typeof Trophy;
   value: string;
   label: string;
-  tone: string;
 }) {
   return (
     <div className="flex items-center gap-1.5">
-      <Icon className={`h-4 w-4 ${tone}`} />
+      <Icon className="h-5 w-5 text-amber-400" />
       <div>
-        <div className="font-headline text-sm font-extrabold leading-none text-white">{value}</div>
+        <div className="font-headline text-base font-extrabold leading-none text-white">{value}</div>
         <div className="text-[6px] font-bold uppercase tracking-widest text-white/60">{label}</div>
       </div>
     </div>
@@ -85,60 +74,72 @@ function IconStat({
 }
 
 /* ------------------------------------------------------------------ PLUS */
-/* Flagship desktop: hero escuro + analytics claro (estilo NFL/NBA). */
+/* Flagship desktop: hero escuro full-bleed + analytics claro (estilo NFL). */
 export function ModelPlus() {
   return (
     <div className="overflow-hidden rounded-2xl border border-white/10 shadow-2xl">
       <BrowserBar />
       <div className="bg-white">
         {/* HERO */}
-        <div className="relative overflow-hidden bg-gradient-to-br from-[#0b1f16] via-[#0c241a] to-black px-5 pb-5 pt-3">
+        <div className="relative h-52 overflow-hidden bg-gradient-to-br from-[#0b1f16] via-[#0c241a] to-black">
+          {/* foto full-bleed à direita */}
+          <div className="absolute inset-y-0 right-0 w-[58%]">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={HERO_KIT} alt="" className="h-full w-full object-cover object-top" />
+            <div className="absolute inset-0 bg-gradient-to-r from-[#0c241a] via-[#0c241a]/40 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#0c241a] via-transparent to-transparent" />
+          </div>
+          {/* glow dourado de estádio */}
+          <div className="pointer-events-none absolute -right-6 top-2 h-40 w-40 rounded-full bg-amber-500/25 blur-2xl" />
           {/* hexágonos decorativos */}
-          <div className="pointer-events-none absolute right-24 top-6 h-24 w-24 rotate-12 rounded-lg border border-amber-400/10" />
-          <div className="pointer-events-none absolute right-10 top-16 h-16 w-16 rotate-45 rounded-lg border border-amber-400/10" />
-          <nav className="flex items-center gap-3 text-[7px] font-semibold text-white/70">
-            <span className="text-white">Home</span>
-            <span>Stats</span>
-            <span>Mídia</span>
-            <span>Carreira</span>
-            <span className="ml-auto">Contato</span>
-          </nav>
-          <div className="grid grid-cols-5 items-center gap-2">
-            <div className="col-span-3 pt-3">
-              <div className="font-headline text-2xl font-extrabold uppercase leading-[0.85] text-[#f3efe0]">
+          <div className="pointer-events-none absolute right-1/2 top-6 h-20 w-20 rotate-12 rounded-xl border border-amber-400/20" />
+          <div className="pointer-events-none absolute right-[42%] top-20 h-12 w-12 rotate-45 rounded-lg border border-amber-400/20" />
+
+          <div className="relative flex h-full flex-col px-5 pt-3">
+            <nav className="flex items-center gap-3 text-[7px] font-semibold text-white/70">
+              <span className="text-white">Home</span>
+              <span>Stats</span>
+              <span>Mídia</span>
+              <span>Carreira</span>
+              <span className="ml-auto">Contato</span>
+            </nav>
+            <div className="mt-auto pb-6">
+              <div className="font-headline text-3xl font-extrabold uppercase leading-[0.82] text-[#f3efe0]">
                 Rafael<br />Lima
               </div>
-              <div className="mt-1 text-[8px] font-bold tracking-[0.25em] text-white/70">PRO ATHLETE</div>
-              <div className="mt-2 w-max rounded-md bg-gradient-to-r from-amber-500 to-amber-600 px-3 py-1 text-[7px] font-bold text-slate-900">
-                Ver Perfil Completo
+              <div className="mt-1.5 text-[9px] font-bold tracking-[0.3em] text-white/70">PRO ATHLETE</div>
+              <div className="mt-2.5 inline-flex items-center gap-1 rounded-md bg-gradient-to-r from-amber-400 to-amber-600 px-3 py-1.5 text-[8px] font-bold text-slate-900">
+                Ver Perfil Completo <ArrowRight className="h-2.5 w-2.5" />
               </div>
-              <div className="mt-3 flex gap-3">
-                <IconStat icon={Trophy} value="3×" label="Campeão" tone="text-amber-400" />
-                <IconStat icon={Award} value="5×" label="Convocações" tone="text-amber-400" />
-                <IconStat icon={Star} value="120+" label="Partidas" tone="text-amber-400" />
+              <div className="mt-3.5 flex gap-4">
+                <IconStat icon={Trophy} value="3×" label="Campeão" />
+                <IconStat icon={Award} value="5×" label="Convocações" />
+                <IconStat icon={Star} value="120+" label="Partidas" />
               </div>
             </div>
-            <div className="relative col-span-2 h-32">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={FLAGSHIP} alt="" className="absolute inset-0 h-full w-full rounded-lg object-cover object-top" />
-              <div className="absolute inset-0 rounded-lg bg-gradient-to-l from-transparent to-[#0c241a]" />
-            </div>
+          </div>
+          {/* pílula de carrossel */}
+          <div className="absolute -bottom-2.5 left-1/2 flex -translate-x-1/2 items-center gap-2 rounded-full bg-gradient-to-r from-amber-400 to-amber-600 px-3 py-1 shadow-lg">
+            <span className="h-1 w-1 rounded-full bg-slate-900/50" />
+            <span className="h-1 w-3 rounded-full bg-slate-900/70" />
+            <span className="h-1 w-1 rounded-full bg-slate-900/50" />
+            <ChevronRight className="h-2.5 w-2.5 text-slate-900" />
           </div>
         </div>
 
         {/* ANALYTICS */}
-        <div className="bg-slate-100 px-5 py-4">
+        <div className="bg-slate-100 px-5 pb-4 pt-5">
           <div className="text-[9px] font-extrabold uppercase tracking-wide text-slate-800">Performance Analytics</div>
           <div className="mt-2 grid grid-cols-3 gap-2">
             <div className="rounded-lg bg-white p-2 shadow-sm">
               <div className="text-[6px] font-semibold text-slate-400">Jardas por Temporada</div>
-              <div className="mt-1 h-10">
+              <div className="mt-1 h-9">
                 <LineChart stroke="#15803d" />
               </div>
             </div>
             <div className="rounded-lg bg-white p-2 shadow-sm">
               <div className="text-[6px] font-semibold text-slate-400">Desarmes por Jogo</div>
-              <div className="mt-1 h-10">
+              <div className="mt-1 h-9">
                 <BarChart fill="#15803d" />
               </div>
             </div>
@@ -181,7 +182,9 @@ export function ModelPlus() {
 export function ModelBasic() {
   return (
     <div className="mx-auto w-full max-w-[260px] overflow-hidden rounded-[1.5rem] border-4 border-slate-800 bg-[#f3f4ef] shadow-2xl">
-      <PhoneNotch />
+      <div className="flex justify-center py-1.5">
+        <div className="h-1 w-12 rounded-full bg-black/20" />
+      </div>
       <div className="bg-emerald-800 py-2 text-center text-[10px] font-extrabold uppercase tracking-[0.2em] text-white">
         Proposta de Patrocínio
       </div>
@@ -227,7 +230,8 @@ export function ModelPremium() {
       <div className="relative h-[340px]">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={CINEMA} alt="" className="absolute inset-0 h-full w-full object-cover object-top" />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-slate-950" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/25 to-slate-950" />
+        <div className="pointer-events-none absolute -left-6 top-10 h-32 w-32 rounded-full bg-amber-500/20 blur-2xl" />
         <div className="relative flex h-full flex-col p-3">
           <nav className="flex gap-3 text-[7px] font-semibold text-white/80">
             <span>Home</span>
@@ -235,27 +239,15 @@ export function ModelPremium() {
             <span>Contato</span>
           </nav>
           <div className="mt-auto">
-            <div className="font-headline text-2xl font-extrabold uppercase leading-[0.85] text-white drop-shadow">
+            <div className="font-headline text-3xl font-extrabold uppercase leading-[0.82] text-white drop-shadow-lg">
               Bruno<br />Alves
             </div>
-            <div className="mt-2 w-max rounded-lg bg-gradient-to-r from-amber-500 to-amber-600 px-3 py-1.5 text-[8px] font-bold text-slate-900 shadow-lg">
-              Entre em Contato
+            <div className="mt-2 inline-flex w-max items-center gap-1 rounded-lg bg-gradient-to-r from-amber-400 to-amber-600 px-3 py-1.5 text-[8px] font-bold text-slate-900 shadow-lg">
+              Entre em Contato <ArrowRight className="h-2.5 w-2.5" />
             </div>
             <div className="mt-3 flex items-center gap-4">
-              <div className="flex items-center gap-1">
-                <Trophy className="h-4 w-4 text-amber-400" />
-                <div>
-                  <div className="font-headline text-sm font-extrabold leading-none text-white">3×</div>
-                  <div className="text-[5px] font-bold uppercase tracking-widest text-white/70">Campeão</div>
-                </div>
-              </div>
-              <div className="flex items-center gap-1">
-                <Award className="h-4 w-4 text-amber-400" />
-                <div>
-                  <div className="font-headline text-sm font-extrabold leading-none text-white">5×</div>
-                  <div className="text-[5px] font-bold uppercase tracking-widest text-white/70">Convocações</div>
-                </div>
-              </div>
+              <IconStat icon={Trophy} value="3×" label="Campeão" />
+              <IconStat icon={Award} value="5×" label="Convocações" />
             </div>
           </div>
         </div>
