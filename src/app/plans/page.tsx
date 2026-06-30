@@ -9,7 +9,7 @@ const plans = [
   {
     id: "basic",
     name: "Básico",
-    price: "R$ 9,90/mês",
+    price: "R$ 29,90/mês",
     description: "O atleta recebe o link da sportpage e ele mesmo envia para empresas e patrocinadores.",
     features: [
       "Página Esportiva Padrão (Markdown)",
@@ -21,7 +21,7 @@ const plans = [
   {
     id: "plus",
     name: "Plus",
-    price: "R$ 29,90/mês",
+    price: "R$ 49,90/mês",
     description: "O atleta e a ProSport enviam o link da sportpage para empresas e clubes parceiros.",
     features: [
       "Tudo do plano Básico",
@@ -36,7 +36,7 @@ const plans = [
   {
     id: "premium",
     name: "Premium",
-    price: "R$ 59,90/mês",
+    price: "R$ 79,90/mês",
     description: "Envio de links para empresas, clubes e para a grande mídia (TV, revistas, jornais).",
     features: [
       "Tudo do plano Plus",

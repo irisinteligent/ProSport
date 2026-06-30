@@ -205,7 +205,7 @@ const PLANS: PlanCard[] = [
   {
     id: "basic",
     name: "Básico",
-    price: "R$ 9,90",
+    price: "R$ 29,90",
     cents: "/mês",
     tagline: "Sua proposta de patrocínio pronta para enviar.",
     features: [
@@ -222,7 +222,7 @@ const PLANS: PlanCard[] = [
   {
     id: "plus",
     name: "Plus",
-    price: "R$ 29,90",
+    price: "R$ 49,90",
     cents: "/mês",
     tagline: "Design de revista esportiva + divulgação ativa.",
     features: [
@@ -241,7 +241,7 @@ const PLANS: PlanCard[] = [
   {
     id: "premium",
     name: "Premium",
-    price: "R$ 59,90",
+    price: "R$ 79,90",
     cents: "/mês",
     tagline: "O pacote flagship para chegar à grande mídia.",
     features: [
@@ -353,7 +353,7 @@ export default async function AssinarPage() {
                 </Link>
               </div>
               <p className="mt-4 text-sm text-slate-400">
-                A partir de R$ 9,90/mês · Cancele quando quiser
+                A partir de R$ 29,90/mês · Cancele quando quiser
               </p>
             </div>
 
