@@ -52,6 +52,8 @@ const profileFormSchema = z.object({
   details: z.string().min(1, "Os detalhes são obrigatórios."),
   achievements: z.string().min(1, "As conquistas são obrigatórias."),
   instagramUrl: z.string().url("URL inválida").optional().or(z.literal('')),
+  tiktokUrl: z.string().url("URL inválida").optional().or(z.literal('')),
+  facebookUrl: z.string().url("URL inválida").optional().or(z.literal('')),
   photo: z.any().optional(),
   youtubeLink: z.string().url("Por favor, insira uma URL válida do YouTube.").optional().or(z.literal('')),
 });
@@ -88,6 +90,8 @@ export function AthleteDashboardClient({ currentPlan }: AthleteDashboardClientPr
       details: "",
       achievements: "",
       instagramUrl: "",
+      tiktokUrl: "",
+      facebookUrl: "",
       photo: undefined,
       youtubeLink: "",
     }
@@ -134,6 +138,8 @@ export function AthleteDashboardClient({ currentPlan }: AthleteDashboardClientPr
         team: values.team || undefined,
         contact: values.contact,
         instagramUrl: values.instagramUrl || undefined,
+        tiktokUrl: values.tiktokUrl || undefined,
+        facebookUrl: values.facebookUrl || undefined,
         photoDataUri: photoDataUri || undefined,
       });
       if (result.error) {
@@ -176,6 +182,8 @@ export function AthleteDashboardClient({ currentPlan }: AthleteDashboardClientPr
         team: values.team || undefined,
         contact: values.contact,
         instagramUrl: values.instagramUrl || undefined,
+        tiktokUrl: values.tiktokUrl || undefined,
+        facebookUrl: values.facebookUrl || undefined,
         photoDataUri: photoDataUri,
         youtubeLink: values.youtubeLink,
         plan: userPlan === 'premium' ? 'premium' as const : 'plus' as const,
@@ -411,19 +419,55 @@ export function AthleteDashboardClient({ currentPlan }: AthleteDashboardClientPr
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name="instagramUrl"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Instagram (opcional)</FormLabel>
-                  <FormControl>
-                    <Input placeholder="https://instagram.com/seuuser" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className="space-y-4">
+              <div>
+                <p className="text-sm font-medium">Redes sociais (opcional)</p>
+                <p className="text-sm text-muted-foreground">
+                  Aparecem como botões na sua Sport Page — patrocinadores conseguem te encontrar direto.
+                </p>
+              </div>
+              <div className="grid gap-4 md:grid-cols-3">
+                <FormField
+                  control={form.control}
+                  name="instagramUrl"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Instagram</FormLabel>
+                      <FormControl>
+                        <Input placeholder="https://instagram.com/seuuser" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="tiktokUrl"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>TikTok</FormLabel>
+                      <FormControl>
+                        <Input placeholder="https://tiktok.com/@seuuser" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="facebookUrl"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Facebook</FormLabel>
+                      <FormControl>
+                        <Input placeholder="https://facebook.com/seuuser" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </div>
             <FormField
               control={form.control}
               name="photo"

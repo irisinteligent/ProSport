@@ -24,6 +24,8 @@ interface CreateBasicSportpageData extends GenerateSponsorPresentationInput {
   team?: string;
   contact?: string;
   instagramUrl?: string;
+  facebookUrl?: string;
+  tiktokUrl?: string;
 }
 
 export async function createBasicPresentation(data: CreateBasicSportpageData) {
@@ -56,6 +58,8 @@ export async function createBasicPresentation(data: CreateBasicSportpageData) {
       team: data.team,
       contact: data.contact,
       instagramUrl: data.instagramUrl,
+      facebookUrl: data.facebookUrl,
+      tiktokUrl: data.tiktokUrl,
       photoUrl,
     });
 

@@ -27,6 +27,7 @@ export const GenerateEnhancedSportpageInputSchema = z.object({
   contact: z.string().optional(),
   instagramUrl: z.string().optional(),
   facebookUrl: z.string().optional(),
+  tiktokUrl: z.string().optional(),
   youtubeLink: z.string().optional(),
   plan: z.enum(['plus', 'premium']).optional(),
 });
