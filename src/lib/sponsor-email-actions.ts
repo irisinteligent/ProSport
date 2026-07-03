@@ -2,8 +2,54 @@
 
 import { z } from "zod";
 import { getSession } from "./auth";
+import { adminDb } from "./firebase-admin";
 import { getResend, getEmailFromAddress } from "./email";
 import { escapeHtml } from "./escape-html";
+
+/**
+ * SEGURANÇA: só aceitamos links de sportpage do nosso próprio domínio
+ * (path /p/...). Sem isso, qualquer assinante poderia usar o remetente
+ * verificado da ProSport para enviar links arbitrários (spam/phishing),
+ * queimando a reputação do domínio no Resend.
+ */
+function isAllowedSportpageUrl(raw: string): boolean {
+  try {
+    const url = new URL(raw);
+    const allowedHosts = new Set(["prosport.ia.br", "www.prosport.ia.br", "localhost"]);
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL;
+    if (appUrl) {
+      try {
+        allowedHosts.add(new URL(appUrl).hostname);
+      } catch {
+        /* ignora APP_URL malformada */
+      }
+    }
+    return allowedHosts.has(url.hostname) && url.pathname.startsWith("/p/");
+  } catch {
+    return false;
+  }
+}
+
+/** Limite diário de e-mails a patrocinadores por atleta (anti-abuso). */
+const SPONSOR_EMAILS_DAILY_LIMIT = 10;
+
+async function hasReachedDailySendLimit(uid: string): Promise<boolean> {
+  const today = new Date().toISOString().slice(0, 10);
+  const snap = await adminDb.collection("users").doc(uid).get();
+  const data = snap.data() as { sponsorEmailsDate?: string; sponsorEmailsCount?: number } | undefined;
+  return data?.sponsorEmailsDate === today && (data.sponsorEmailsCount ?? 0) >= SPONSOR_EMAILS_DAILY_LIMIT;
+}
+
+async function recordSponsorEmailSent(uid: string): Promise<void> {
+  const today = new Date().toISOString().slice(0, 10);
+  const ref = adminDb.collection("users").doc(uid);
+  await adminDb.runTransaction(async (tx) => {
+    const snap = await tx.get(ref);
+    const data = snap.data() as { sponsorEmailsDate?: string; sponsorEmailsCount?: number } | undefined;
+    const count = data?.sponsorEmailsDate === today ? (data.sponsorEmailsCount ?? 0) + 1 : 1;
+    tx.set(ref, { sponsorEmailsDate: today, sponsorEmailsCount: count }, { merge: true });
+  });
+}
 
 const sendToSponsorSchema = z.object({
   sponsorEmail: z.string().email("Informe um e-mail válido para o patrocinador."),
@@ -36,6 +82,17 @@ export async function sendSportpageToSponsor(
     return { success: false, error: parsed.error.issues[0]?.message ?? "Dados inválidos." };
   }
   const { sponsorEmail, sponsorName, message, sportpageUrl } = parsed.data;
+
+  if (!isAllowedSportpageUrl(sportpageUrl)) {
+    return { success: false, error: "O link precisa ser de uma Sport Page da ProSport (prosport.ia.br/p/...)." };
+  }
+  if (await hasReachedDailySendLimit(session.uid)) {
+    return {
+      success: false,
+      error: `Você atingiu o limite de ${SPONSOR_EMAILS_DAILY_LIMIT} envios por dia. Tente novamente amanhã.`,
+    };
+  }
+
   const athleteName = session.fullName ?? "Um atleta da ProSport";
 
   const html = `
@@ -59,6 +116,7 @@ export async function sendSportpageToSponsor(
       console.error("[sendSportpageToSponsor] erro do Resend", error);
       return { success: false, error: "Não foi possível enviar o e-mail. Tente novamente." };
     }
+    await recordSponsorEmailSent(session.uid).catch(() => undefined);
     return { success: true };
   } catch (err) {
     console.error("[sendSportpageToSponsor] erro inesperado", err);

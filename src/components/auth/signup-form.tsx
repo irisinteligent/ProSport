@@ -5,6 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 import { signupAthlete } from "@/lib/auth-actions";
 import { Button } from "@/components/ui/button";
@@ -143,10 +144,19 @@ export function SignupForm() {
               </FormControl>
               <div className="space-y-1 leading-none">
                 <FormLabel>
-                  Aceitar Termos de Uso de Imagem
+                  Aceitar os Termos de Uso e a Política de Privacidade
                 </FormLabel>
                 <FormDescription>
-                  Você concorda com nossos Termos de Serviço e permite que o ProSport use suas imagens fornecidas para gerar e distribuir seu perfil.
+                  Você concorda com os{" "}
+                  <Link href="/termos" target="_blank" className="underline underline-offset-4">
+                    Termos de Uso
+                  </Link>{" "}
+                  e a{" "}
+                  <Link href="/privacidade" target="_blank" className="underline underline-offset-4">
+                    Política de Privacidade
+                  </Link>
+                  , incluindo a licença para a ProSport usar as imagens fornecidas para gerar e
+                  divulgar seu perfil conforme o plano contratado.
                 </FormDescription>
                 <FormMessage />
               </div>

@@ -1,16 +1,24 @@
 "use server";
 
-import { headers } from "next/headers";
-import { getSession } from "./auth";
+import { getSession, isEmailVerified } from "./auth";
 import { getStripe } from "./stripe";
+import { getBaseUrl } from "./base-url";
 import { PLAN_DETAILS, isPlanId, type PlanId } from "./plans";
 
 type CheckoutResult = { success: true; url: string } | { success: false; error: string };
 
-async function getBaseUrl(): Promise<string> {
-  const host = (await headers()).get("host") ?? "localhost:9003";
-  const protocol = host.startsWith("localhost") ? "http" : "https";
-  return `${protocol}://${host}`;
+/**
+ * Se houver um Price pré-criado no Stripe Dashboard para o plano (env vars
+ * STRIPE_PRICE_<PLANO>_<MONTHLY|ANNUAL>, ex.: STRIPE_PRICE_PLUS_MONTHLY),
+ * usa esse Price em vez de price_data inline. Isso permite ativar a troca de
+ * plano no Customer Portal do Stripe (que exige Products/Prices cadastrados).
+ * Sem as envs, tudo continua funcionando com price_data inline — o portal
+ * apenas fica limitado a cancelar/atualizar cartão.
+ */
+function getConfiguredPriceId(planId: PlanId, isAnnual: boolean): string | undefined {
+  const key = `STRIPE_PRICE_${planId.toUpperCase()}_${isAnnual ? "ANNUAL" : "MONTHLY"}`;
+  const value = process.env[key];
+  return value && value.trim() !== "" ? value : undefined;
 }
 
 export async function createCheckoutSession(input: {
@@ -30,9 +38,19 @@ export async function createCheckoutSession(input: {
   if (session.role !== plan.role) {
     return { success: false, error: "Esta conta não pode assinar este plano." };
   }
+  // Sem e-mail confirmado o portal fica bloqueado mesmo após o pagamento —
+  // bloquear aqui evita cobrar alguém que não conseguiria entrar (e chargeback).
+  if (!(await isEmailVerified(session.uid))) {
+    return {
+      success: false,
+      error: "Confirme seu e-mail antes de assinar. Verifique sua caixa de entrada (e o spam).",
+    };
+  }
 
   const baseUrl = await getBaseUrl();
   const dashboardPath = plan.role === "company" ? "/company/dashboard" : "/dashboard";
+
+  const configuredPriceId = getConfiguredPriceId(planId, input.isAnnual);
 
   try {
     const checkoutSession = await getStripe().checkout.sessions.create({
@@ -40,15 +58,17 @@ export async function createCheckoutSession(input: {
       customer_email: session.email,
       client_reference_id: session.uid,
       line_items: [
-        {
-          price_data: {
-            currency: "brl",
-            product_data: { name: `ProSport - Plano ${plan.name}` },
-            recurring: { interval: input.isAnnual ? "year" : "month" },
-            unit_amount: input.isAnnual ? plan.annualPriceCents : plan.monthlyPriceCents,
-          },
-          quantity: 1,
-        },
+        configuredPriceId
+          ? { price: configuredPriceId, quantity: 1 }
+          : {
+              price_data: {
+                currency: "brl",
+                product_data: { name: `ProSport - Plano ${plan.name}` },
+                recurring: { interval: input.isAnnual ? "year" : "month" },
+                unit_amount: input.isAnnual ? plan.annualPriceCents : plan.monthlyPriceCents,
+              },
+              quantity: 1,
+            },
       ],
       metadata: { uid: session.uid, planId },
       subscription_data: {

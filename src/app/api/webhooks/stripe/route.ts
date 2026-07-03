@@ -34,12 +34,19 @@ export async function POST(req: Request): Promise<NextResponse> {
         const uid = session.client_reference_id ?? session.metadata?.uid;
         const planId = session.metadata?.planId;
         if (uid && planId) {
-          await adminDb.collection("users").doc(uid).update({
-            plan: planId,
-            stripeCustomerId: session.customer as string,
-            stripeSubscriptionId: session.subscription as string,
-            subscriptionStatus: "active",
-          });
+          // set + merge (não update): se o doc não existir por qualquer motivo,
+          // update() lança e o pagamento confirmado ficaria sem efeito no portal.
+          await adminDb.collection("users").doc(uid).set(
+            {
+              plan: planId,
+              stripeCustomerId: session.customer as string,
+              stripeSubscriptionId: session.subscription as string,
+              subscriptionStatus: "active",
+            },
+            { merge: true }
+          );
+        } else {
+          console.error("[stripe webhook] checkout.session.completed sem uid/planId", session.id);
         }
         break;
       }

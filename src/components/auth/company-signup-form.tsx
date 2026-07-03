@@ -5,6 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 import { signupCompany } from "@/lib/auth-actions";
 import { Button } from "@/components/ui/button";
@@ -184,7 +185,18 @@ export function CompanySignupForm() {
             </FormItem>
           )}
         />
-        
+
+        <p className="text-sm text-muted-foreground">
+          Ao cadastrar, você concorda com os{" "}
+          <Link href="/termos" target="_blank" className="underline underline-offset-4">
+            Termos de Uso
+          </Link>{" "}
+          e a{" "}
+          <Link href="/privacidade" target="_blank" className="underline underline-offset-4">
+            Política de Privacidade
+          </Link>
+          .
+        </p>
         <Button type="submit" className="w-full font-headline" disabled={form.formState.isSubmitting}>
           Cadastrar e Ver Planos
         </Button>

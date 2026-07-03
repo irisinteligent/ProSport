@@ -2,10 +2,26 @@
 import { Header } from "@/components/header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Check } from "lucide-react";
+import { Check, Clock } from "lucide-react";
 import Link from "next/link";
 
-const plans = [
+type Plan = {
+  id: string;
+  name: string;
+  price: string;
+  description: string;
+  features: string[];
+  /**
+   * Recursos ainda em desenvolvimento — exibidos SEPARADOS dos recursos
+   * incluídos, com rótulo explícito, para não vender o que ainda não existe
+   * (CDC: oferta vincula). Quando lançados, entram no plano sem custo extra.
+   */
+  comingSoon?: string[];
+  cta: string;
+  featured?: boolean;
+};
+
+const plans: Plan[] = [
   {
     id: "basic",
     name: "Básico",
@@ -42,9 +58,11 @@ const plans = [
       "Tudo do plano Plus",
       "Inclusão de Vídeo do YouTube",
       "Divulgação para mídias de TV e jornais",
-      "Análise de Patrocinador (em breve)",
-      "Geração de Mídia com IA (em breve)",
       "Suporte Prioritário",
+    ],
+    comingSoon: [
+      "Análise de Patrocinador",
+      "Geração de Mídia com IA",
     ],
     cta: "Tornar-se Premium",
   },
@@ -86,6 +104,24 @@ export default function PlansPage() {
                       </li>
                     ))}
                   </ul>
+                  {plan.comingSoon && (
+                    <div className="rounded-md border border-dashed p-3">
+                      <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                        Em desenvolvimento
+                      </p>
+                      <ul className="mt-2 space-y-2">
+                        {plan.comingSoon.map((feature) => (
+                          <li key={feature} className="flex items-start text-muted-foreground">
+                            <Clock className="mr-2 mt-1 h-4 w-4 flex-shrink-0" />
+                            <span className="text-sm">{feature}</span>
+                          </li>
+                        ))}
+                      </ul>
+                      <p className="mt-2 text-xs text-muted-foreground">
+                        Ainda não disponíveis — entram no plano sem custo extra quando lançarem.
+                      </p>
+                    </div>
+                  )}
                 </CardContent>
                 <CardFooter>
                   <Button asChild className="w-full font-headline" variant={plan.featured ? "default" : "outline"}>
@@ -95,6 +131,10 @@ export default function PlansPage() {
               </Card>
             ))}
           </div>
+          <p className="text-sm text-muted-foreground">
+            Assinatura com renovação automática — cancele quando quiser. Veja os{" "}
+            <Link href="/termos" className="underline underline-offset-4">Termos de Uso</Link>.
+          </p>
         </section>
       </main>
     </div>

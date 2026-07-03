@@ -1,18 +1,12 @@
 "use server";
 
-import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { getSession, type SessionUser } from "./auth";
 import { getStripe } from "./stripe";
+import { getBaseUrl } from "./base-url";
 import { adminDb } from "./firebase-admin";
 
 type BillingPortalResult = { success: true; url: string } | { success: false; error: string };
-
-async function getBaseUrl(): Promise<string> {
-  const host = (await headers()).get("host") ?? "localhost:9003";
-  const protocol = host.startsWith("localhost") ? "http" : "https";
-  return `${protocol}://${host}`;
-}
 
 function dashboardPathFor(session: SessionUser): string {
   return session.role === "company" ? "/company/dashboard" : "/dashboard";

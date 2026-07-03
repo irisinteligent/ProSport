@@ -1,6 +1,6 @@
 "use server";
 
-import { cookies, headers } from "next/headers";
+import { cookies } from "next/headers";
 import { z } from "zod";
 import { adminAuth, adminDb } from "./firebase-admin";
 import {
@@ -10,12 +10,7 @@ import {
 } from "./firebase-rest";
 import { getSession, SESSION_COOKIE_NAME, SESSION_MAX_AGE_SECONDS, type Role } from "./auth";
 import { getResend, getEmailFromAddress } from "./email";
-
-async function getBaseUrl(): Promise<string> {
-  const host = (await headers()).get("host") ?? "localhost:9003";
-  const protocol = host.startsWith("localhost") ? "http" : "https";
-  return `${protocol}://${host}`;
-}
+import { getBaseUrl } from "./base-url";
 
 /**
  * Gera o link de verificação no Firebase e envia ao e-mail cadastrado via Resend.
@@ -297,4 +292,3 @@ export async function requestPasswordReset(
   await sendPasswordResetEmail(parsed.data.email).catch(() => undefined);
   return { success: true };
 }
-

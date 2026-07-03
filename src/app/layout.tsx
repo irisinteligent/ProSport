@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 import { cn } from '@/lib/utils';
@@ -32,7 +33,17 @@ export default function RootLayout({
         </div>
         <Toaster />
         <footer className="w-full bg-card/80 backdrop-blur-sm p-4 text-center text-muted-foreground text-sm mt-auto">
-          © {new Date().getFullYear()} Direitos Reservados ProSport
+          <div className="flex flex-col items-center justify-center gap-1 sm:flex-row sm:gap-6">
+            <span>© {new Date().getFullYear()} Direitos Reservados ProSport</span>
+            <nav className="flex gap-4">
+              <Link href="/termos" className="underline-offset-4 hover:text-foreground hover:underline">
+                Termos de Uso
+              </Link>
+              <Link href="/privacidade" className="underline-offset-4 hover:text-foreground hover:underline">
+                Privacidade
+              </Link>
+            </nav>
+          </div>
         </footer>
       </body>
     </html>
