@@ -133,6 +133,12 @@ export async function createEnhancedSportpage(data: CreateEnhancedSportpageData)
 // ─── AI Test ─────────────────────────────────────────────────────────────────
 
 export async function performAiConnectionTest() {
+  // SEGURANÇA: diagnóstico consome cota paga do Gemini — restrito a admin
+  // (Server Action é endpoint público; sem o gate, vira vetor de abuso de custo).
+  const session = await getSession();
+  if (!session || session.role !== "admin") {
+    return { error: "Acesso restrito ao administrador." };
+  }
   try {
     const result = await testAiConnection();
     return { message: result.message };

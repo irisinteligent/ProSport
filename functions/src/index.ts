@@ -10,6 +10,14 @@ const db = getFirestore();
 
 const OPENAI_API_KEY = defineSecret("OPENAI_API_KEY");
 
+// SEGURANÇA: generateLanding é um endpoint público de ESCRITA que ainda chama
+// a OpenAI (paga). Sem chave, qualquer pessoa na internet poderia gravar
+// landings em massa e queimar cota. O chamador (hoje só o app Flutter de QA)
+// precisa enviar o header "x-api-key" com o valor desta secret.
+// Cadastre com: firebase functions:secrets:set LANDING_API_KEY
+// Sem a secret configurada, o endpoint fica DESATIVADO (403) — padrão seguro.
+const LANDING_API_KEY = defineSecret("LANDING_API_KEY");
+
 // ======= Versão/diagnóstico =======
 const BUILD_ID = "prosport-functions@C:\\PROSPORT | 2025-08-28T00:00-03";
 const CODEBASE = "default";
@@ -78,7 +86,7 @@ export const generateLanding = onRequest(
   {
     region: REGIONS,
     cors: false,
-    secrets: [OPENAI_API_KEY],
+    secrets: [OPENAI_API_KEY, LANDING_API_KEY],
   },
   async (req, res): Promise<void> => {
     // Headers p/ debug
@@ -96,6 +104,19 @@ export const generateLanding = onRequest(
     }
     if (req.method !== "POST") {
       res.status(405).json({error: "Use POST"}); return;
+    }
+
+    // Autenticação por API key (ver comentário na secret LANDING_API_KEY).
+    const expectedKey = LANDING_API_KEY.value();
+    const providedKey = req.headers["x-api-key"];
+    if (!expectedKey || providedKey !== expectedKey) {
+      res.status(403).json({
+        ok: false,
+        error: expectedKey ?
+          "x-api-key inválida ou ausente." :
+          "Endpoint desativado (LANDING_API_KEY não configurada).",
+      });
+      return;
     }
 
     try {

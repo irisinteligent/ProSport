@@ -2,6 +2,7 @@
 
 import { adminDb } from "@/lib/firebase-admin";
 import { getStripe } from "@/lib/stripe";
+import { getSession } from "@/lib/auth";
 
 export type RevenueStats = {
   today: number;
@@ -88,6 +89,14 @@ async function fetchRevenue(): Promise<RevenueStats> {
 }
 
 export async function getAdminStats(): Promise<AdminStats> {
+  // SEGURANÇA: Server Actions são endpoints POST públicos (o ID da action fica
+  // em chunks JS estáticos). Sem esta checagem, qualquer visitante conseguiria
+  // extrair e-mails de todos os usuários e o faturamento. O gate da página
+  // /admin NÃO protege a action em si.
+  const session = await getSession();
+  if (!session || session.role !== "admin") {
+    throw new Error("Acesso negado.");
+  }
   try {
     const [[usersSnap, pagesSnap], revenue] = await Promise.all([
       Promise.all([

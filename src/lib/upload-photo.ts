@@ -14,7 +14,20 @@ export async function uploadAthletePhoto(slug: string, photoDataUri: string): Pr
     throw new Error('Foto inválida: esperado um data URI de imagem em base64.');
   }
   const [, mimeType, base64Data] = match;
-  const extension = mimeType.split('/')[1] ?? 'jpg';
+  // SEGURANÇA: allowlist de formatos raster. SVG fica de fora de propósito —
+  // pode carregar <script> e vira vetor de XSS se algum dia for servido inline.
+  const ALLOWED_MIMES: Record<string, string> = {
+    'image/jpeg': 'jpg',
+    'image/jpg': 'jpg',
+    'image/png': 'png',
+    'image/webp': 'webp',
+    'image/avif': 'avif',
+    'image/gif': 'gif',
+  };
+  const extension = ALLOWED_MIMES[mimeType.toLowerCase()];
+  if (!extension) {
+    throw new Error('Formato de imagem não suportado: use JPG, PNG, WebP, AVIF ou GIF.');
+  }
   const buffer = Buffer.from(base64Data, 'base64');
 
   const bucket = adminStorage.bucket();

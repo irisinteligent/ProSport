@@ -49,6 +49,15 @@ export async function GET(
       'X-Frame-Options': 'SAMEORIGIN',
       // Impede MIME sniffing
       'X-Content-Type-Options': 'nosniff',
+      // CSP: os templates não usam JS — bloquear scripts neutraliza qualquer
+      // XSS residual em conteúdo legado salvo no Firestore. Permite apenas
+      // CSS inline + Google Fonts, imagens https/data e o embed do YouTube.
+      'Content-Security-Policy':
+        "default-src 'none'; style-src 'unsafe-inline' https://fonts.googleapis.com; " +
+        'font-src https://fonts.gstatic.com; img-src https: data:; ' +
+        'frame-src https://www.youtube.com https://www.youtube-nocookie.com; ' +
+        "base-uri 'none'; form-action 'none'",
+      'Referrer-Policy': 'strict-origin-when-cross-origin',
       // Sem cache — sempre serve o conteúdo atual do Firestore
       'Cache-Control': 'no-store',
     },

@@ -8,6 +8,13 @@ class ProSportApi {
     'https://us-central1-prosport-portfolio.cloudfunctions.net/generateLanding',
   ];
 
+  // O endpoint agora exige o header x-api-key (secret LANDING_API_KEY das
+  // Functions). Rode o app de QA com:
+  //   flutter run --dart-define=PROSPORT_API_KEY=<valor-da-secret>
+  // NUNCA hardcode a chave aqui — este arquivo é versionado.
+  static const String _apiKey =
+      String.fromEnvironment('PROSPORT_API_KEY', defaultValue: '');
+
   static Future<Map<String, dynamic>> generateLanding({
     required String plano,
     required String nome,
@@ -25,7 +32,10 @@ class ProSportApi {
       try {
         final resp = await http.post(
           Uri.parse(url),
-          headers: {'Content-Type': 'application/json'},
+          headers: {
+            'Content-Type': 'application/json',
+            if (_apiKey.isNotEmpty) 'x-api-key': _apiKey,
+          },
           body: jsonEncode(payload),
         );
 
