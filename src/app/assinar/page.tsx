@@ -14,6 +14,7 @@ import {
   Clock,
   Trophy,
   ChevronDown,
+  Quote,
 } from "lucide-react";
 
 import { Header } from "@/components/header";
@@ -281,6 +282,23 @@ const FAQ = [
   },
 ];
 
+// Sinais de confiança reais (não são alegações inventadas).
+const TRUST = [
+  { icon: ShieldCheck, t: "Pagamento seguro", s: "processado pela Stripe" },
+  { icon: Clock, t: "Cancele quando quiser", s: "assinatura sem fidelidade" },
+  { icon: Sparkles, t: "IA especializada", s: "em apresentar atletas" },
+  { icon: Trophy, t: "Qualquer modalidade", s: "do amador ao profissional" },
+];
+
+// Depoimentos de EXEMPLO — o autor "Nome do atleta" é placeholder para o
+// dono do produto substituir por depoimentos reais. As frases descrevem o
+// valor entregue, sem inventar identidade de pessoa real.
+const DEPOIMENTOS = [
+  { quote: "Em minutos eu tinha uma página profissional pra enviar aos patrocinadores — antes eu só tinha print do Instagram.", autor: "Nome do atleta", mod: "Jiu-Jítsu" },
+  { quote: "O design ficou no nível de time grande. Fez diferença na hora de me apresentar a um clube.", autor: "Nome do atleta", mod: "Futebol" },
+  { quote: "Consigo mostrar minha trajetória e meus números num lugar só, com a minha cara.", autor: "Nome do atleta", mod: "Natação" },
+];
+
 /* ======================================================================== */
 /*  Página                                                                   */
 /* ======================================================================== */
@@ -541,6 +559,54 @@ export default async function AssinarPage() {
                     ))}
                   </ul>
                 </div>
+              </div>
+            </div>
+          </section>
+
+          {/* ============================ PROVA SOCIAL ============================ */}
+          <section className="border-y border-white/10 bg-white/[0.03] py-20">
+            <div className="container mx-auto px-4">
+              {/* Faixa de confiança */}
+              <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
+                {TRUST.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <div key={item.t} className="flex flex-col items-center text-center">
+                      <span className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-500/10">
+                        <Icon className="h-6 w-6 text-emerald-400" />
+                      </span>
+                      <div className="text-sm font-bold text-white">{item.t}</div>
+                      <div className="mt-0.5 text-xs text-slate-400">{item.s}</div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Depoimentos */}
+              <h2 className="mt-16 text-center font-headline text-3xl font-extrabold md:text-4xl">
+                O que dizem os <span className="bg-gradient-to-r from-emerald-400 to-sky-400 bg-clip-text text-transparent">atletas</span>
+              </h2>
+              <div className="mt-10 grid gap-6 md:grid-cols-3">
+                {DEPOIMENTOS.map((d) => (
+                  <div key={d.mod} className="flex flex-col rounded-2xl border border-white/10 bg-white/[0.04] p-6">
+                    <Quote className="h-6 w-6 text-emerald-400/60" />
+                    <div className="mt-2 flex gap-0.5">
+                      {[0, 1, 2, 3, 4].map((i) => (
+                        <Star key={i} className="h-4 w-4 fill-amber-400 text-amber-400" />
+                      ))}
+                    </div>
+                    <p className="mt-3 flex-1 text-slate-200">&ldquo;{d.quote}&rdquo;</p>
+                    <div className="mt-5 flex items-center gap-3">
+                      <span className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-emerald-400/30 to-sky-500/30 text-sm font-bold text-white">
+                        {d.mod.charAt(0)}
+                      </span>
+                      <div>
+                        <div className="text-sm font-semibold text-white">{d.autor}</div>
+                        <div className="text-xs text-slate-400">{d.mod}</div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           </section>
