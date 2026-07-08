@@ -12,9 +12,17 @@ const firebaseConfig = {
 
 const app: FirebaseApp = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 
-// getAuth() valida a apiKey e LANÇA se ela faltar — isso quebrava o `next build`
-// ao pré-renderizar as páginas de login (erro auth/invalid-api-key no servidor).
-// O SDK de auth do navegador só é usado no clique de "login com Google", então
-// inicializamos apenas no cliente. No servidor `auth` fica indefinido (não é usado lá).
-export const auth: Auth =
-  typeof window !== 'undefined' ? getAuth(app) : (undefined as unknown as Auth);
+// getAuth() valida a apiKey e LANÇA auth/invalid-api-key se ela faltar. Isso não
+// pode derrubar a página inteira: o login por e-mail roda no servidor (sem este
+// SDK) e precisa continuar funcionando. Por isso: inicializamos só no navegador
+// e protegemos com try/catch — se o Auth do cliente falhar, apenas o "Continuar
+// com Google" fica indisponível; o resto da tela de login segue de pé.
+let _auth: Auth | undefined;
+if (typeof window !== 'undefined') {
+  try {
+    _auth = getAuth(app);
+  } catch (err) {
+    console.error('[firebase-client] falha ao inicializar o Auth do navegador:', err);
+  }
+}
+export const auth = _auth as Auth;
