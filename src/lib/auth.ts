@@ -60,12 +60,10 @@ export async function getSession(): Promise<SessionUser | null> {
  * desatualizado pois foi emitido no cadastro, antes da verificação).
  * Contas via Google já vêm com e-mail verificado.
  */
-// IMPORTANTE: enquanto o Resend não entregar e-mails de verificação a endereços
-// externos (o domínio prosport.ia.br ainda NÃO está verificado no Resend), a
-// exigência de verificação NÃO pode bloquear o acesso — senão o link nunca chega
-// e nenhum usuário de e-mail/senha consegue entrar. Deixe FALSE até o Resend
-// estar ativo; depois mude para true para voltar a exigir e-mail confirmado.
-const EMAIL_VERIFICATION_ENFORCED = false;
+// Domínio prosport.ia.br VERIFICADO no Resend em 08/07/2026 — os e-mails de
+// verificação chegam a qualquer endereço. Gate reativado: só e-mail confirmado
+// acessa o portal (e o checkout também exige, ver checkout-actions.ts).
+const EMAIL_VERIFICATION_ENFORCED = true;
 
 export async function isEmailVerified(uid: string): Promise<boolean> {
   if (!EMAIL_VERIFICATION_ENFORCED) return true;
