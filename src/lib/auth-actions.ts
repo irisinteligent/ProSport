@@ -106,7 +106,7 @@ async function createSessionForIdToken(idToken: string): Promise<void> {
 
 async function createUserProfileAndSession(
   uid: string,
-  profile: { email: string; role: Role; plan: string | null; fullName?: string; companyName?: string }
+  profile: { email: string; role: Role; plan: string | null; fullName?: string; companyName?: string; phone?: string }
 ): Promise<void> {
   await adminDb.collection("users").doc(uid).set({
     ...profile,
@@ -122,6 +122,16 @@ const athleteSignupSchema = z.object({
   fullName: z.string().min(1),
   email: z.string().email(),
   password: z.string().min(6),
+  // Celular/WhatsApp obrigatório — canal de contato do atleta com a ProSport
+  // e dos patrocinadores com o atleta. Aceita formatos comuns; validação
+  // real é feita sobre os dígitos (10 a 13, cobrindo DDD+9 e +55).
+  phone: z
+    .string()
+    .min(1)
+    .refine((v) => {
+      const d = v.replace(/\D/g, "");
+      return d.length >= 10 && d.length <= 13;
+    }, "Número de celular inválido."),
 });
 
 export async function signupAthlete(
@@ -131,7 +141,7 @@ export async function signupAthlete(
   if (!parsed.success) {
     return { success: false, error: "Dados inválidos." };
   }
-  const { fullName, email, password } = parsed.data;
+  const { fullName, email, password, phone } = parsed.data;
 
   try {
     const userRecord = await adminAuth.createUser({
@@ -144,6 +154,7 @@ export async function signupAthlete(
       role: "athlete",
       plan: "basic",
       fullName,
+      phone: phone.replace(/\D/g, ""),
     });
     await sendEmailVerification(email, fullName);
     return { success: true };

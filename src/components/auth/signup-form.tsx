@@ -26,6 +26,13 @@ const formSchema = z
   .object({
     fullName: z.string().min(1, { message: "O nome completo é obrigatório." }),
     email: z.string().min(1, { message: "O e-mail é obrigatório." }).email({ message: "Endereço de e-mail inválido." }),
+    phone: z
+      .string()
+      .min(1, { message: "O celular (WhatsApp) é obrigatório." })
+      .refine((v) => {
+        const d = v.replace(/\D/g, "");
+        return d.length >= 10 && d.length <= 13;
+      }, { message: "Informe um celular válido com DDD, ex.: (11) 91234-5678." }),
     password: z
       .string()
       .min(8, { message: "A senha deve ter pelo menos 8 caracteres." }),
@@ -48,6 +55,7 @@ export function SignupForm() {
     defaultValues: {
       fullName: "",
       email: "",
+      phone: "",
       password: "",
       confirmPassword: "",
     },
@@ -57,6 +65,7 @@ export function SignupForm() {
     const result = await signupAthlete({
       fullName: values.fullName,
       email: values.email,
+      phone: values.phone,
       password: values.password,
     });
 
@@ -101,6 +110,22 @@ export function SignupForm() {
               <FormControl>
                 <Input placeholder="seu.email@exemplo.com" {...field} />
               </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="phone"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Celular / WhatsApp</FormLabel>
+              <FormControl>
+                <Input type="tel" inputMode="tel" placeholder="(11) 91234-5678" {...field} />
+              </FormControl>
+              <FormDescription>
+                Com DDD. É por ele que a ProSport e os patrocinadores falam com você.
+              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
