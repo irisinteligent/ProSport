@@ -25,6 +25,8 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { TutorialTab } from "@/components/dashboard/tutorial-tab";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
@@ -224,6 +226,13 @@ export function AthleteDashboardClient({ currentPlan }: AthleteDashboardClientPr
   const canGeneratePlus = isPlusPlan && form.formState.isValid && !!photoDataUri;
 
   return (
+    <Tabs defaultValue="criar" className="space-y-4">
+      <TabsList>
+        <TabsTrigger value="criar">Criar Sport Page</TabsTrigger>
+        <TabsTrigger value="tutorial">Tutorial &amp; Dicas</TabsTrigger>
+      </TabsList>
+
+      <TabsContent value="criar">
     <Card>
       <CardHeader>
         <div className="flex justify-between items-start">
@@ -611,5 +620,11 @@ export function AthleteDashboardClient({ currentPlan }: AthleteDashboardClientPr
         </div>
       </CardContent>
     </Card>
+      </TabsContent>
+
+      <TabsContent value="tutorial">
+        <TutorialTab />
+      </TabsContent>
+    </Tabs>
   );
 }
