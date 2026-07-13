@@ -51,14 +51,31 @@ const profileFormSchema = z.object({
   contact: z.string().min(1, "O contato é obrigatório."),
   details: z.string().min(1, "Os detalhes são obrigatórios."),
   achievements: z.string().min(1, "As conquistas são obrigatórias."),
-  instagramUrl: z.string().url("URL inválida").optional().or(z.literal('')),
-  tiktokUrl: z.string().url("URL inválida").optional().or(z.literal('')),
-  facebookUrl: z.string().url("URL inválida").optional().or(z.literal('')),
+  // Aceita só o @usuário (ex.: "@beto" ou "beto") OU a URL completa —
+  // o link final é montado por buildSocialUrl() antes do envio.
+  instagramUrl: z.string().max(120).regex(/^\S*$/, "Sem espaços — use @usuario ou a URL.").optional().or(z.literal('')),
+  tiktokUrl: z.string().max(120).regex(/^\S*$/, "Sem espaços — use @usuario ou a URL.").optional().or(z.literal('')),
+  facebookUrl: z.string().max(120).regex(/^\S*$/, "Sem espaços — use @usuario ou a URL.").optional().or(z.literal('')),
   photo: z.any().optional(),
   youtubeLink: z.string().url("Por favor, insira uma URL válida do YouTube.").optional().or(z.literal('')),
 });
 
 type ProfileFormValues = z.infer<typeof profileFormSchema>;
+
+/** Converte "@usuario"/"usuario" no link oficial da rede; URLs completas passam direto. */
+function buildSocialUrl(
+  value: string | undefined,
+  network: "instagram" | "tiktok" | "facebook"
+): string | undefined {
+  const v = (value ?? "").trim();
+  if (!v) return undefined;
+  if (/^https?:\/\//i.test(v)) return v;
+  const handle = v.replace(/^@+/, "");
+  if (!handle) return undefined;
+  if (network === "instagram") return `https://instagram.com/${handle}`;
+  if (network === "tiktok") return `https://tiktok.com/@${handle}`;
+  return `https://facebook.com/${handle}`;
+}
 
 interface AthleteDashboardClientProps {
   currentPlan: "basic" | "plus" | "premium";
@@ -137,9 +154,9 @@ export function AthleteDashboardClient({ currentPlan }: AthleteDashboardClientPr
         details: values.details,
         team: values.team || undefined,
         contact: values.contact,
-        instagramUrl: values.instagramUrl || undefined,
-        tiktokUrl: values.tiktokUrl || undefined,
-        facebookUrl: values.facebookUrl || undefined,
+        instagramUrl: buildSocialUrl(values.instagramUrl, "instagram"),
+        tiktokUrl: buildSocialUrl(values.tiktokUrl, "tiktok"),
+        facebookUrl: buildSocialUrl(values.facebookUrl, "facebook"),
         photoDataUri: photoDataUri || undefined,
       });
       if (result.error) {
@@ -181,9 +198,9 @@ export function AthleteDashboardClient({ currentPlan }: AthleteDashboardClientPr
         achievements: values.achievements,
         team: values.team || undefined,
         contact: values.contact,
-        instagramUrl: values.instagramUrl || undefined,
-        tiktokUrl: values.tiktokUrl || undefined,
-        facebookUrl: values.facebookUrl || undefined,
+        instagramUrl: buildSocialUrl(values.instagramUrl, "instagram"),
+        tiktokUrl: buildSocialUrl(values.tiktokUrl, "tiktok"),
+        facebookUrl: buildSocialUrl(values.facebookUrl, "facebook"),
         photoDataUri: photoDataUri,
         youtubeLink: values.youtubeLink,
         plan: userPlan === 'premium' ? 'premium' as const : 'plus' as const,
@@ -423,7 +440,7 @@ export function AthleteDashboardClient({ currentPlan }: AthleteDashboardClientPr
               <div>
                 <p className="text-sm font-medium">Redes sociais (opcional)</p>
                 <p className="text-sm text-muted-foreground">
-                  Aparecem como botões na sua Sport Page — patrocinadores conseguem te encontrar direto.
+                  Só o @usuário basta (ex.: @seunome) — nós montamos o link. Aparecem como botões na sua Sport Page.
                 </p>
               </div>
               <div className="grid gap-4 md:grid-cols-3">
@@ -434,7 +451,7 @@ export function AthleteDashboardClient({ currentPlan }: AthleteDashboardClientPr
                     <FormItem>
                       <FormLabel>Instagram</FormLabel>
                       <FormControl>
-                        <Input placeholder="https://instagram.com/seuuser" {...field} />
+                        <Input placeholder="@seuusuario" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -447,7 +464,7 @@ export function AthleteDashboardClient({ currentPlan }: AthleteDashboardClientPr
                     <FormItem>
                       <FormLabel>TikTok</FormLabel>
                       <FormControl>
-                        <Input placeholder="https://tiktok.com/@seuuser" {...field} />
+                        <Input placeholder="@seuusuario" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -460,7 +477,7 @@ export function AthleteDashboardClient({ currentPlan }: AthleteDashboardClientPr
                     <FormItem>
                       <FormLabel>Facebook</FormLabel>
                       <FormControl>
-                        <Input placeholder="https://facebook.com/seuuser" {...field} />
+                        <Input placeholder="@seuusuario" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -490,7 +507,7 @@ export function AthleteDashboardClient({ currentPlan }: AthleteDashboardClientPr
                 </FormItem>
               )}
             />
-             {isPremiumPlan && (
+             {isPlusPlan && (
               <FormField
                 control={form.control}
                 name="youtubeLink"

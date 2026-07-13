@@ -184,11 +184,14 @@ export function renderPlusSportpage(a: TemplateAthlete, copy: SportpageCopy, the
     )
     .join('');
 
+  // A mesma foto composta é reutilizada, mas cada "momento" recebe um
+  // enquadramento próprio (crop, zoom, espelhamento e gradação de cor) para
+  // não parecerem imagens idênticas.
   const mediaHtml = copy.mediaCaptions
     .slice(0, 2)
     .map(
       (c, i) => `
-      <figure class="media-item">
+      <figure class="media-item ${i === 0 ? 'm-a' : 'm-b'}">
         <div class="media-frame"><img src="${IMG}" alt="${esc(a.fullName)} — ${esc(c)}" loading="lazy"></div>
         <figcaption><span>0${i + 1}</span>${esc(c)}</figcaption>
       </figure>`
@@ -270,10 +273,15 @@ section{padding:clamp(3.6rem,9vw,6rem) 0}
 .media-frame{overflow:hidden;border-radius:18px}
 .media-item:first-child .media-frame{aspect-ratio:16/10}
 .media-item:last-child .media-frame{aspect-ratio:16/12}
-.media-frame img{width:100%;height:100%;object-fit:cover;object-position:50% 12%;transition:transform .5s ease}
-.media-item:hover img{transform:scale(1.03)}
+.media-frame img{width:100%;height:100%;object-fit:cover;transition:transform .5s ease}
+.media-item.m-a img{object-position:50% 6%}
+.media-item.m-a:hover img{transform:scale(1.04)}
+.media-item.m-b img{transform:scaleX(-1) scale(1.42);object-position:52% 38%;filter:saturate(.86) contrast(1.06)}
+.media-item.m-b:hover img{transform:scaleX(-1) scale(1.48)}
 .media-item figcaption{display:flex;gap:.7rem;align-items:baseline;margin-top:.75rem;color:var(--muted);font-size:.9rem}
 .media-item figcaption span{font-family:'${theme.headFont}',sans-serif;color:var(--accent)}
+.yt{aspect-ratio:16/9;border-radius:18px;overflow:hidden;box-shadow:0 18px 50px rgba(0,0,0,.35)}
+.yt iframe{width:100%;height:100%;border:0}
 .quotes{display:grid;gap:1.3rem}
 .quote{border-left:3px solid var(--accent);padding:.4rem 0 .4rem 1.5rem;display:flex;flex-direction:column;gap:.8rem}
 .q-ic{color:var(--accent)}
@@ -322,6 +330,12 @@ footer a{color:var(--soft);text-decoration:none}
     <div class="sec-h"><span class="badge">${fic('bolt', 20)}</span><h2>Momentos</h2></div>
     <div class="media-grid">${mediaHtml}</div>
   </div></section>
+
+  ${a.youtubeEmbedUrl ? `
+  <section id="video"><div class="wrap">
+    <div class="sec-h"><span class="badge">${fic('play', 18)}</span><h2>Em ação</h2></div>
+    <div class="yt"><iframe src="${esc(a.youtubeEmbedUrl)}" title="Vídeo de ${esc(a.fullName)}" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>
+  </div></section>` : ''}
 
   <section><div class="wrap">
     <div class="sec-h"><span class="badge">${fic('quote', 18)}</span><h2>O que dizem</h2></div>
@@ -444,7 +458,7 @@ export function renderPremiumSportpage(a: TemplateAthlete, copy: SportpageCopy, 
       const cap = copy.mediaCaptions[i % copy.mediaCaptions.length];
       return `
       <figure class="g-card">
-        <div class="g-frame"><img src="${IMG}" alt="${esc(a.fullName)} — ${esc(cap)}" loading="lazy"></div>
+        <div class="g-frame g-v${i}"><img src="${IMG}" alt="${esc(a.fullName)} — ${esc(cap)}" loading="lazy"></div>
         <figcaption><img class="g-avatar" src="${IMG}" alt="" aria-hidden="true"><span>${esc(cap)}</span></figcaption>
       </figure>`;
     })
@@ -564,6 +578,11 @@ h1,h2,h3{font-family:'${theme.headFont}','Arial Narrow',sans-serif;text-transfor
 .g-card:hover{transform:translateY(-4px);box-shadow:0 14px 34px rgba(15,18,25,.11)}
 .g-frame{aspect-ratio:4/3.4;border-radius:9px;overflow:hidden}
 .g-frame img{width:100%;height:100%;object-fit:cover;object-position:50% 10%}
+/* Variações por card (crop/zoom/espelho/gradação) para a mesma foto não repetir igual */
+.g-v0 img{object-position:50% 5%}
+.g-v1 img{transform:scaleX(-1);object-position:58% 16%}
+.g-v2 img{transform:scale(1.5);object-position:50% 44%;filter:saturate(.9)}
+.g-v3 img{transform:scaleX(-1) scale(1.28);object-position:42% 10%;filter:contrast(1.07) saturate(.85)}
 .g-card figcaption{display:flex;align-items:center;gap:.55rem;padding:.7rem .25rem .3rem;font-size:.8rem;color:rgba(0,0,0,.62)}
 .g-avatar{width:28px;height:28px;border-radius:50%;object-fit:cover;object-position:50% 6%;flex-shrink:0}
 @media(max-width:940px){.gallery{grid-template-columns:repeat(2,1fr)}}
