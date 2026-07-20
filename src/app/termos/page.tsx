@@ -98,7 +98,21 @@ export default function TermosPage() {
           </section>
 
           <section>
-            <h2>7. Disponibilidade e alterações</h2>
+            <h2>7. Marca e propriedade intelectual</h2>
+            <p>
+              A marca ProSport, o logotipo, o nome de domínio prosport.ia.br, o layout da
+              plataforma, os templates das Sport Pages, os textos institucionais e o software que
+              opera o serviço são de titularidade exclusiva da ProSport e protegidos pela
+              legislação de propriedade intelectual (Lei 9.279/96 e Lei 9.610/98). É proibida a
+              reprodução, imitação ou uso desses elementos — inclusive do nome "ProSport" em
+              produtos, serviços, domínios ou perfis — sem autorização prévia e por escrito.
+              O conteúdo enviado pelos atletas permanece de titularidade deles, nos termos da
+              seção 4.
+            </p>
+          </section>
+
+          <section>
+            <h2>8. Disponibilidade e alterações</h2>
             <p>
               Trabalhamos para manter a plataforma disponível, mas não garantimos operação
               ininterrupta. Funcionalidades identificadas como "em breve" ou "em desenvolvimento"
@@ -110,7 +124,7 @@ export default function TermosPage() {
           </section>
 
           <section>
-            <h2>8. Privacidade</h2>
+            <h2>9. Privacidade</h2>
             <p>
               O tratamento de dados pessoais é descrito na nossa{" "}
               <Link href="/privacidade" className="underline underline-offset-4">
@@ -121,7 +135,7 @@ export default function TermosPage() {
           </section>
 
           <section>
-            <h2>9. Lei aplicável e contato</h2>
+            <h2>10. Lei aplicável e contato</h2>
             <p>
               Estes Termos são regidos pelas leis brasileiras, incluindo o Código de Defesa do
               Consumidor e a LGPD. Dúvidas, solicitações e pedidos de reembolso: {" "}
