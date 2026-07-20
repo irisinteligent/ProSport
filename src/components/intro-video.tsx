@@ -36,7 +36,17 @@ export function IntroVideo({ src }: { src: string }) {
   if (!show) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center overflow-hidden bg-black">
+      {/* Fundo: o mesmo vídeo ampliado, desfocado e escurecido preenche as
+          laterais no desktop (o vídeo principal continua sem cortes). */}
+      <video
+        src={src}
+        autoPlay
+        muted
+        playsInline
+        aria-hidden
+        className="absolute inset-0 h-full w-full scale-125 object-cover blur-2xl brightness-[.35]"
+      />
       <video
         ref={videoRef}
         src={src}
@@ -44,7 +54,7 @@ export function IntroVideo({ src }: { src: string }) {
         muted={muted}
         playsInline
         onEnded={close}
-        className="h-full w-full object-contain"
+        className="relative h-full w-full object-contain"
       />
       <button
         type="button"
