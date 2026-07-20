@@ -36,6 +36,9 @@ export default function RootLayout({
           <div className="flex flex-col items-center justify-center gap-1 sm:flex-row sm:gap-6">
             <span>© {new Date().getFullYear()} Direitos Reservados ProSport</span>
             <nav className="flex gap-4">
+              <Link href="/parceiros" className="underline-offset-4 hover:text-foreground hover:underline">
+                Para Empresas
+              </Link>
               <Link href="/termos" className="underline-offset-4 hover:text-foreground hover:underline">
                 Termos de Uso
               </Link>

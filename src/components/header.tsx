@@ -49,6 +49,12 @@ export function Header({
             >
               Planos
             </Link>
+            <Link
+              href="/parceiros"
+              className="flex items-center text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+            >
+              Para Empresas
+            </Link>
           </nav>
         </div>
 
