@@ -32,7 +32,7 @@ function Cta({ label = "Criar conta de empresa", className = "" }: { label?: str
   return (
     <Link
       href={CTA_HREF}
-      className={`inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-400 px-7 py-3.5 text-sm font-bold text-emerald-950 transition hover:bg-emerald-300 ${className}`}
+      className={`inline-flex items-center justify-center gap-2 rounded-xl bg-amber-400 px-7 py-3.5 text-sm font-bold text-amber-950 transition hover:bg-amber-300 ${className}`}
     >
       {label}
       <ArrowRight className="h-4 w-4" />
@@ -47,7 +47,7 @@ export default function ParceirosPage() {
       <header className="sticky top-0 z-20 border-b border-white/10 bg-slate-950/80 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5">
           <Link href="/" className="font-headline text-lg font-bold tracking-tight">
-            Pro<span className="text-emerald-400">Sport</span>
+            Pro<span className="text-amber-400">Sport</span>
           </Link>
           <div className="flex items-center gap-4">
             <Link href="/company/login" className="hidden text-sm font-medium text-slate-300 hover:text-white sm:block">
@@ -55,7 +55,7 @@ export default function ParceirosPage() {
             </Link>
             <Link
               href={CTA_HREF}
-              className="rounded-lg bg-emerald-400 px-4 py-2 text-sm font-bold text-emerald-950 transition hover:bg-emerald-300"
+              className="rounded-lg bg-amber-400 px-4 py-2 text-sm font-bold text-amber-950 transition hover:bg-amber-300"
             >
               Começar
             </Link>
@@ -68,16 +68,16 @@ export default function ParceirosPage() {
         <section className="relative overflow-hidden">
           <div
             aria-hidden
-            className="pointer-events-none absolute inset-0 bg-[radial-gradient(80%_60%_at_70%_0%,rgba(52,211,153,.14),transparent_60%)]"
+            className="pointer-events-none absolute inset-0 bg-[radial-gradient(80%_60%_at_70%_0%,rgba(251,191,36,.14),transparent_60%)]"
           />
           <div className="mx-auto max-w-6xl px-5 pb-16 pt-14 md:pb-24 md:pt-20">
-            <p className="mb-4 inline-flex items-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-400/10 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-emerald-300">
+            <p className="mb-4 inline-flex items-center gap-2 rounded-full border border-amber-400/30 bg-amber-400/10 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-amber-300">
               <Handshake className="h-3.5 w-3.5" />
               Patrocinadores · Clubes · Empresas
             </p>
             <h1 className="max-w-3xl font-headline text-4xl font-extrabold leading-[1.05] tracking-tight md:text-6xl">
               O próximo atleta da sua marca
-              <span className="text-emerald-400"> já está aqui.</span>
+              <span className="text-amber-400"> já está aqui.</span>
             </h1>
             <p className="mt-5 max-w-2xl text-lg leading-relaxed text-slate-300">
               A ProSport transforma atletas em apresentações profissionais completas — história,
@@ -96,7 +96,7 @@ export default function ParceirosPage() {
                 { ic: MessageCircle, t: "Contato direto", d: "WhatsApp e redes do atleta a um clique — a negociação é sua, sem comissão." },
               ].map((f) => (
                 <div key={f.t} className="flex items-start gap-3">
-                  <f.ic className="mt-1 h-5 w-5 flex-shrink-0 text-emerald-400" />
+                  <f.ic className="mt-1 h-5 w-5 flex-shrink-0 text-amber-400" />
                   <div>
                     <p className="font-semibold">{f.t}</p>
                     <p className="text-sm text-slate-400">{f.d}</p>
@@ -122,7 +122,7 @@ export default function ParceirosPage() {
                 </p>
               </div>
               <div>
-                <h2 className="font-headline text-2xl font-bold text-emerald-400 md:text-3xl">
+                <h2 className="font-headline text-2xl font-bold text-amber-400 md:text-3xl">
                   Na ProSport, cada atleta chega pronto para ser avaliado
                 </h2>
                 <p className="mt-4 leading-relaxed text-slate-300">
@@ -138,7 +138,7 @@ export default function ParceirosPage() {
         {/* POR QUE SER PARCEIRO — valorizando a vinda deles */}
         <section className="mx-auto max-w-6xl px-5 py-16 md:py-20">
           <div className="mb-10 max-w-2xl">
-            <p className="text-xs font-bold uppercase tracking-widest text-emerald-400">Parceria fundadora</p>
+            <p className="text-xs font-bold uppercase tracking-widest text-amber-400">Parceria fundadora</p>
             <h2 className="mt-2 font-headline text-3xl font-bold md:text-4xl">
               Quem chega agora, chega na frente
             </h2>
@@ -156,8 +156,8 @@ export default function ParceirosPage() {
               { ic: LineChart, t: "Decisão baseada em informação", d: "Trajetória, regularidade em competições e presença digital — os dados que sustentam o investimento." },
               { ic: ShieldCheck, t: "Sem comissão sobre o patrocínio", d: "A ProSport conecta. O acordo, os valores e a relação com o atleta são inteiramente seus." },
             ].map((c) => (
-              <div key={c.t} className="rounded-2xl border border-white/10 bg-slate-900/60 p-6 transition hover:border-emerald-400/40">
-                <c.ic className="h-6 w-6 text-emerald-400" />
+              <div key={c.t} className="rounded-2xl border border-white/10 bg-slate-900/60 p-6 transition hover:border-amber-400/40">
+                <c.ic className="h-6 w-6 text-amber-400" />
                 <h3 className="mt-4 font-headline text-lg font-bold">{c.t}</h3>
                 <p className="mt-2 text-sm leading-relaxed text-slate-400">{c.d}</p>
               </div>
@@ -176,7 +176,7 @@ export default function ParceirosPage() {
                 { n: "03", t: "Fale direto com o atleta", d: "Abra a página, avalie e chame no WhatsApp ou nas redes. A parceria nasce sem atravessador." },
               ].map((s) => (
                 <div key={s.n} className="relative rounded-2xl border border-white/10 p-6">
-                  <span className="font-headline text-4xl font-extrabold text-emerald-400/30">{s.n}</span>
+                  <span className="font-headline text-4xl font-extrabold text-amber-400/30">{s.n}</span>
                   <h3 className="mt-3 font-headline text-lg font-bold">{s.t}</h3>
                   <p className="mt-2 text-sm leading-relaxed text-slate-400">{s.d}</p>
                 </div>
@@ -187,8 +187,8 @@ export default function ParceirosPage() {
 
         {/* CTA FINAL */}
         <section className="mx-auto max-w-6xl px-5 py-16 md:py-24">
-          <div className="overflow-hidden rounded-3xl border border-emerald-400/30 bg-[radial-gradient(120%_140%_at_20%_0%,rgba(52,211,153,.18),rgba(2,6,23,0)_60%)] p-8 text-center md:p-14">
-            <Handshake className="mx-auto h-10 w-10 text-emerald-400" />
+          <div className="overflow-hidden rounded-3xl border border-amber-400/30 bg-[radial-gradient(120%_140%_at_20%_0%,rgba(251,191,36,.18),rgba(2,6,23,0)_60%)] p-8 text-center md:p-14">
+            <Handshake className="mx-auto h-10 w-10 text-amber-400" />
             <h2 className="mx-auto mt-4 max-w-2xl font-headline text-3xl font-extrabold md:text-5xl">
               Sua marca no peito de quem ainda vai subir no pódio
             </h2>
@@ -201,7 +201,7 @@ export default function ParceirosPage() {
             </div>
             <p className="mt-4 text-sm text-slate-400">
               Prefere falar com a gente antes?{" "}
-              <a href="mailto:contato@prosport.ia.br" className="text-emerald-400 underline underline-offset-4">
+              <a href="mailto:contato@prosport.ia.br" className="text-amber-400 underline underline-offset-4">
                 contato@prosport.ia.br
               </a>
             </p>
