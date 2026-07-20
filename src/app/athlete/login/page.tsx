@@ -1,7 +1,6 @@
 
 import Link from "next/link";
 import { LoginForm } from "@/components/auth/login-form";
-import { IntroVideo } from "@/components/intro-video";
 import { Icons } from "@/components/icons";
 import {
   Card,
@@ -15,7 +14,6 @@ import { Button } from "@/components/ui/button";
 export default function AthleteLoginPage() {
   return (
     <div className="flex min-h-screen items-center justify-center p-4">
-      <IntroVideo src="/videos/intro.mp4" />
       <div className="w-full max-w-md">
         <Card className="shadow-2xl bg-card/70 backdrop-blur-[1px]">
           <CardHeader className="text-center">

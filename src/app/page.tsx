@@ -1,4 +1,5 @@
 
+import { IntroVideo } from "@/components/intro-video";
 import Link from "next/link";
 import { Icons } from "@/components/icons";
 import {
@@ -13,6 +14,7 @@ import { Button } from "@/components/ui/button";
 export default function PortalPage() {
   return (
     <div className="flex min-h-screen items-center justify-center p-4">
+      <IntroVideo src="/videos/intro.mp4" />
       <div className="w-full max-w-lg">
         <Card className="shadow-2xl">
           <CardHeader className="text-center">
