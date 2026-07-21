@@ -98,3 +98,43 @@ Ação rápida: salvar hoje o site no Wayback Machine e repetir a cada versão.
 - [ ] Garantir @prosport nos socials que faltarem
 - [ ] Salvar snapshot no Wayback Machine
 - [x] Cláusula de propriedade intelectual nos Termos de Uso (feita em 20/07/2026)
+
+---
+
+## ✅ DEPÓSITO REALIZADO — 21/07/2026
+
+**Marca ProSport depositada no INPI com sucesso.**
+
+| Dado | Valor |
+|---|---|
+| Nº do Pedido (processo) | **944514901** |
+| Nº do Protocolo | 8602803863524 |
+| Data/hora | 21/07/2026 · 11:53:45 |
+| Requerente | Roberto Alves da Silva (pessoa física, CPF 121.338.638-18) |
+| Apresentação | Nominativa |
+| Natureza | Produto e/ou serviço |
+| Classe (Nice 13) | **42** |
+| Especificação | Software como serviço [saas]; Hospedagem de websites |
+| GRU paga | 29409172361314740 — R$ 440 (Pix, 21/07/2026) |
+
+**Prioridade travada em 21/07/2026.**
+
+### Próximos passos (acompanhamento)
+1. **Baixar e guardar o PDF protocolado** (assinado digitalmente pelo INPI). ✅ fazer
+2. **Acompanhar a RPI** (Revista da Propriedade Industrial, toda terça-feira) —
+   consultar o processo 944514901 em https://busca.inpi.gov.br/pePI/ e incluir
+   em "Meus Pedidos" para receber e-mail a cada etapa.
+3. **Publicação do pedido** → abre prazo de **60 dias para oposição** de terceiros.
+   Se ninguém se opuser (ou após responder oposição), vai a exame de mérito.
+4. **Deferimento** → a concessão hoje é automática, sem nova taxa (mudança
+   recente do INPI). Certificado emitido depois; vigência 10 anos, renovável.
+5. Prazo total estimado: 12–24 meses.
+6. **ATENÇÃO A GOLPES:** vão chegar boletos falsos "do INPI" por e-mail/correio.
+   O INPI não cobra por fora — tudo é via GRU emitida no site oficial. Ignore.
+
+### Ações futuras já mapeadas (ver seções acima)
+- Transferir a titularidade para a empresa (SLU/LTDA da ProSport) quando ela
+  for aberta — a marca em PF hoje trava a prioridade; a transferência é rotina.
+- Depositar marca MISTA (nome + logo) na classe 42 e/ou 41 quando o logo
+  definitivo existir.
+- Registro do software no e-Software (hash já gerado — ver doc próprio).
