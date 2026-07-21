@@ -56,9 +56,9 @@
     z-index: -1;
   }
 
-  /* Sombra suave para textos sobre a imagem de fundo (telas com card transparente) */
-  .text-shadow-soft {
-    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.7), 0 1px 3px rgba(0, 0, 0, 0.55);
+  /* Telas sem card (sobre a imagem): a frase de descrição fica em amarelo (cor da marca) */
+  .text-shadow-soft .space-y-1\.5 > .text-muted-foreground {
+    color: hsl(var(--primary));
   }
   
   body {
