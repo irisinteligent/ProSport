@@ -15,7 +15,7 @@ export default function CompanyLoginPage() {
   return (
     <div className="flex min-h-screen items-center justify-center p-4">
       <div className="w-full max-w-md">
-        <Card className="border-0 bg-transparent shadow-none">
+        <Card className="border-0 bg-transparent shadow-none text-shadow-soft">
           <CardHeader className="text-center">
             <div className="mb-4 flex justify-center">
               <Icons.logo className="h-12 w-12 text-primary" />
